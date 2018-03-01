@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="css/bootstrap.css">
+
+    <title>Hello, world!</title>
+  </head>
+  <body class="bg-light">
+
+    <div class="container">
+      <div class="row">
+        <div class="col-md-12 order-md-1">
+          <h4 class="mb-3">Server</h4>
+          <form class="needs-validation" novalidate="" _lpchecked="1">
+            <div class="row">
+              <div class="col-md-10 mb-3">
+                <label for="host">Host</label>
+                <input class="form-control" id="host" placeholder="" value="10.236.200.154" required=""  type="text">
+                <div class="invalid-feedback">
+                  Valid host is required.
+                </div>
+              </div>
+              <div class="col-md-2 mb-3">
+                <label for="port">Port</label>
+                <input class="form-control" id="port" placeholder="" value="22" required="" type="text">
+                <div class="invalid-feedback">
+                  Valid port is required.
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-6 mb-3">
+                <label for="user">User</label>
+                <div class="input-group">
+                  <div class="input-group-prepend">
+                    <span class="input-group-text">@</span>
+                  </div>
+                  <input class="form-control" id="user" placeholder="" value="root" required="" type="text">
+                  <div class="invalid-feedback" style="width: 100%;">
+                    Your username is required.
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-6 mb-3">
+                <label for="password">Password</label>
+                <input class="form-control" id="password" placeholder="" value="root" required="" type="password">
+                <div class="invalid-feedback">
+                  Valid port is required.
+                </div>
+              </div>
+            </div>
+
+            <hr class="mb-4">
+            <button type="button" class="btn btn-primary btn-lg btn-block" onclick="myFunction()">Continue to checkout</button>
+          </form>
+        </div>
+      </div>
+
+      <footer class="my-5 pt-5 text-muted text-center text-small">
+        <p class="mb-1">© 2017-2018 Company Name</p>
+        Мы используем node <script> document.write (process.versions.node)</script>,
+        Chrome <script>document.write (process.versions.chrome)</script>,
+        и Electron <script>document.write (process.versions.electron)</script>.
+      </footer>
+    </div>
+
+    <script src="js/backend-connector.js"></script>
+
+    <script>
+       function myFunction() {
+
+        // Some data that will be sent to the main process
+        let Data = {
+          host: $('#host').val(),
+          port: $('#port').val(),
+          user: $('#user').val(),
+          password: $('#password').val(),
+        };
+
+        connectToSSH(Data);
+        
+      }
+    </script>
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <!-- Elctron + jQuery bugfix -->
+    <script>if (typeof module === 'object') {window.module = module; module = undefined;}</script>
+    <script src="js/jquery.js"></script>
+    <script src="js/popper.js"></script>
+    <script src="js/bootstrap.js"></script>
+  </body>
+</html>
