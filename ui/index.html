@@ -13,7 +13,21 @@
 </head>
 
 <body class="bg-light">
-    <div id="server-list">
+    <!-- Elctron + jQuery bugfix -->
+    <script>
+        if (typeof module === 'object') {
+            window.module = module;
+            module = undefined;
+        }
+    </script>
+    <script src="js/backend-connector.js"></script>
+    <script src="js/jquery.js"></script>
+    <script src="js/popper.js"></script>
+    <script src="js/bootstrap.js"></script>
+    <script src="js/index.js"></script>
+
+    <!-- ******************** VIEW: Server List ******************** -->
+    <div id="server-list" class="main-view">
         <div class="container" style="max-width: 30rem;">
             <div class="row">
                 <div class="container">
@@ -22,7 +36,7 @@
             </div>
             <div class="row justify-content-end">
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-primary mb-2">Add</button>
+                    <button type="submit" class="btn btn-primary mb-2" onclick="switchMainView('add-server')">Add</button>
                 </div>
                 <div class="col-auto">
                     <button type="submit" class="btn btn-primary mb-2">Delete</button>
@@ -41,8 +55,9 @@
             </div>
         </div>
     </div>
-    <div id="add-server" class="d-none">
-        <div class="container">
+    <!-- ******************** VIEW: Add Server ******************** -->
+    <div id="add-server" class="main-view d-none">
+        <div class="container" style="max-width: 30rem;">
             <div class="row">
                 <div class="col-md-12 order-md-1">
                     <h4 class="mb-3">Server</h4>
@@ -87,27 +102,11 @@
                         </div>
 
                         <hr class="mb-4">
-                        <button type="button" class="btn btn-primary btn-lg btn-block" onclick="myFunction()">Continue to checkout</button>
+                        <button type="button" class="btn btn-primary btn-lg btn-block" onclick="switchMainView('server-list');myFunction()">Continue to checkout</button>
                     </form>
                 </div>
             </div>
-
-            <footer class="my-5 pt-5 text-muted text-center text-small">
-                <p class="mb-1">© 2017-2018 Company Name</p>
-                Мы используем node
-                <script>
-                    document.write(process.versions.node)
-                </script>, Chrome
-                <script>
-                    document.write(process.versions.chrome)
-                </script>, и Electron
-                <script>
-                    document.write(process.versions.electron)
-                </script>.
-            </footer>
         </div>
-
-        <script src="js/backend-connector.js"></script>
 
         <script>
             function myFunction() {
@@ -120,23 +119,11 @@
                     password: $('#password').val(),
                 };
 
-                connectToSSH(Data);
+                //connectToSSH(Data);
 
             }
         </script>
 
-        <!-- Optional JavaScript -->
-        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-        <!-- Elctron + jQuery bugfix -->
-        <script>
-            if (typeof module === 'object') {
-                window.module = module;
-                module = undefined;
-            }
-        </script>
-        <script src="js/jquery.js"></script>
-        <script src="js/popper.js"></script>
-        <script src="js/bootstrap.js"></script>
     </div>
 </body>
 
