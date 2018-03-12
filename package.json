@@ -3,16 +3,16 @@
     "version": "0.1.0",
     "main": "backend.js",
     "dependencies": {
-        "electron": "~1.8.2",
-        "ssh2": "~0.5.5",
-        "crypto": "~1.0.1",
-        "stream-json": "~0.5.2"
+        "electron": "1.8.3",
+        "ssh2": "0.5.5",
+        "aes-js": "3.1.0",
+        "zlib": "1.0.5"
     },
     "devDependencies": {
-        "eslint-config-standard": "^11.0.0",
-        "eslint-plugin-import": "^2.9.0",
-        "eslint-plugin-node": "^6.0.1",
-        "eslint-plugin-promise": "^3.6.0",
-        "eslint-plugin-standard": "^3.0.1"
+        "eslint-config-standard": "11.0.0",
+        "eslint-plugin-import": "2.9.0",
+        "eslint-plugin-node": "6.0.1",
+        "eslint-plugin-promise": "3.6.0",
+        "eslint-plugin-standard": "3.0.1"
     }
 }
