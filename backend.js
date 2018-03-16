@@ -6,13 +6,7 @@ const {
 const path = require('path');
 const url = require('url');
 var sshClient = require('ssh2').Client;
-var Storage = require('./storage');
-
-console.log('read',Storage.read());
-Storage.create({host: 'host'});
-console.log('read2',Storage.read());
-Storage.create({host2: 'host2'});
-console.log('read3',Storage.read());
+var storage = require('./storage');
 
 // Храните глобальную ссылку на объект окна, если вы этого не сделаете, окно будет
 // автоматически закрываться, когда объект JavaScript собирает мусор.
@@ -102,4 +96,18 @@ ipcMain.on('request-mainprocess-action', (event, arg) => {
     password: arg.password
   });
 
+});
+
+ipcMain.on('add-server', function(event, server) {
+  storage.create(server);
+  event.returnValue = 'true';
+});
+
+ipcMain.on('delete-server', function(event, server) {
+  storage.delete(server);
+  event.returnValue = 'true';
+});
+
+ipcMain.on('get-servers', function(event, ignore) {
+  event.returnValue = storage.read();
 });
