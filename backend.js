@@ -7,6 +7,7 @@ const path = require('path');
 const url = require('url');
 var sshClient = require('ssh2').Client;
 var storage = require('./storage');
+var plugins = require('./plugins-loader');
 
 // Храните глобальную ссылку на объект окна, если вы этого не сделаете, окно будет
 // автоматически закрываться, когда объект JavaScript собирает мусор.
@@ -38,6 +39,7 @@ function createWindow() {
   });
 
   console.log("ready");
+  plugins.load();
 }
 
 // Этот метод будет вызываться, когда Electron закончит 
@@ -111,3 +113,12 @@ ipcMain.on('delete-server', function(event, server) {
 ipcMain.on('get-servers', function(event, ignore) {
   event.returnValue = storage.read();
 });
+
+ipcMain.on('get-plugins', function(event, ignore) {
+  event.returnValue = plugins.list().map(i => i.name);
+});
+
+ipcMain.on('get-plugin-view', function(event, pluginName) {
+  event.returnValue = plugins.list().filter(i => i.name === pluginName).pop().getView();
+});
+

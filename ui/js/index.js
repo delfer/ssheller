@@ -1,6 +1,7 @@
 views = {
   ServerList: {},
-  AddServer: {}
+  AddServer: {},
+  Plugins: {}
 };
 
 function switchMainView(view) {
@@ -33,7 +34,6 @@ function deleteServer() {
 viewServerList = {};
 
 views.ServerList.activate = function () {
-
   var servers = backend.getServers();
   var $list = $('#serverSelector');
   $('#serverSelector').empty();
@@ -41,8 +41,25 @@ views.ServerList.activate = function () {
   $.each(servers, function () {
     $list.append($("<option />").text(this.name));
   });
-
 };
 
 views.AddServer.activate = function () {
+};
+
+views.Plugins.activate = function () {
+  let selFunc = function () {
+    let pluginName = $('#pluginSelector option:selected').text();
+    console.log(pluginName);
+    $('#PluginContent').html(backend.getPluginView(pluginName));
+  };
+
+  var plugins = backend.getPlugins();
+  var $list = $('#pluginSelector');
+  $list.empty();
+  $list.on('refreshed.bs.select', selFunc);
+  $list.on('changed.bs.select', selFunc);
+  $.each(plugins, function () {
+    $list.append($("<option />").text(this));
+  });
+  $list.selectpicker('refresh');  
 };

@@ -15,6 +15,14 @@ backend.deleteServer = function (server) {
     ipcRenderer.sendSync('delete-server', server);
 };
 
-backend.getServers = function (server) {
-    return ipcRenderer.sendSync('get-servers', server);
+backend.getServers = function () {
+    return ipcRenderer.sendSync('get-servers');
+};
+
+backend.getPlugins = function () {
+    return ipcRenderer.sendSync('get-plugins');
+};
+
+backend.getPluginView = function (pluginName) {
+    return ipcRenderer.sendSync('get-plugin-view', pluginName);
 };

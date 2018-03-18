@@ -8,6 +8,7 @@
 
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="css/bootstrap.css">
+    <link rel="stylesheet" href="css/bootstrap-select.css">
 
     <title>SSHeller</title>
 </head>
@@ -24,6 +25,7 @@
     <script src="js/jquery.js"></script>
     <script src="js/popper.js"></script>
     <script src="js/bootstrap.js"></script>
+    <script src="js/bootstrap-select.js"></script>
     <script src="js/index.js"></script>
 
     <!-- ******************** VIEW: Server List ******************** -->
@@ -39,7 +41,7 @@
                     <button type="submit" class="btn btn-primary mb-2" onclick="switchMainView('AddServer')">Add</button>
                 </div>
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-primary mb-2" onclick="deleteServer();switchMainView('ServerList')">Delete</button>
+                    <button type="submit" class="btn btn-danger mb-2" onclick="deleteServer();switchMainView('ServerList')">Delete</button>
                 </div>
             </div>
             <div class="row">
@@ -49,7 +51,7 @@
                     </select>
                 </div>
             </div>
-            <button type="button" class="btn btn-primary btn-lg btn-block" onclick="console.log('connect')">Connect</button>
+            <button type="button" class="btn btn-primary btn-lg btn-block" onclick="switchMainView('Plugins')">Connect</button>
         </div>
     </div>
     <!-- ******************** VIEW: Add Server ******************** -->
@@ -113,23 +115,29 @@
                 </div>
             </div>
         </div>
-
-        <script>
-            function myFunction() {
-
-                // Some data that will be sent to the main process
-                let Data = {
-                    host: $('#host').val(),
-                    port: $('#port').val(),
-                    user: $('#user').val(),
-                    password: $('#password').val(),
-                };
-
-                //connectToSSH(Data);
-
-            }
-        </script>
-
+    </div>
+    <!-- ******************** VIEW: Plugins ******************** -->
+    <div id="Plugins" class="main-view d-none">
+        <div class="container">
+            <div class="row">
+                <div id="plugin-selector" class="col-auto">
+                    <select id="pluginSelector" class="selectpicker" data-live-search="true">
+                        <option>Loading...</option>
+                    </select>
+                </div>
+                <div class="col align-self-center">
+                    Connected to: ...
+                </div>
+                <div class="col-auto align-self-center">
+                    <button type="submit" class="btn btn-danger mb-2" onclick="switchMainView('ServerList')">Diconnect</button>
+                </div>
+            </div>
+            <div class="row">
+                <div id="PluginContent" class="jumbotron">
+                    Loading...
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 
