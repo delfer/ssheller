@@ -8,17 +8,19 @@ plugin.getView = function () {
 };
 
 plugin.setViewRefreshCallback = function (callback) {
-    return sys.callback = callback;
+    sys.callback = callback;
 };
 
 plugin.setSSHConnection = function (ssh) {
-    return sys.ssh = ssh;
+    sys.ssh = ssh;
 };
 
 plugin.interract = function (data) {
-    return true;
+};
+
+plugin.reset = function () {
 };
 
 exports.plugin = function(list, loader) {
-    return list.push(plugin);
+    list.push(plugin);
 };

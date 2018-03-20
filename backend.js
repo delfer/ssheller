@@ -9,6 +9,8 @@ var sshClient = require('ssh2').Client;
 var storage = require('./storage');
 var plugins = require('./plugins-loader');
 
+var serverConnection;
+
 // Храните глобальную ссылку на объект окна, если вы этого не сделаете, окно будет
 // автоматически закрываться, когда объект JavaScript собирает мусор.
 let win;
@@ -39,7 +41,7 @@ function createWindow() {
   });
 
   console.log("ready");
-  plugins.load();
+  plugins.load(pluginViewRefreshCallback);
 }
 
 // Этот метод будет вызываться, когда Electron закончит 
@@ -64,61 +66,53 @@ app.on('activate', () => {
   }
 });
 
-// В этом файле вы можете включить код другого основного процесса 
-// вашего приложения. Можно также поместить их в отдельные файлы и применить к ним require.
-
-ipcMain.on('request-mainprocess-action', (event, arg) => {
-  // Displays the object sent from the renderer process:
-  //{
-  //    message: "Hi",
-  //    someData: "Let's go"
-  //}
-  console.log(
-    arg
-  );
-
-  var conn = new sshClient();
-  conn.on('ready', function () {
-    console.log('Client :: ready');
-    conn.exec('uptime', function (err, stream) {
-      if (err) throw err;
-      stream.on('close', function (code, signal) {
-        console.log('Stream :: close :: code: ' + code + ', signal: ' + signal);
-        conn.end();
-      }).on('data', function (data) {
-        console.log('STDOUT: ' + data);
-      }).stderr.on('data', function (data) {
-        console.log('STDERR: ' + data);
-      });
-    });
-  }).connect({
-    host: arg.host,
-    port: arg.port,
-    username: arg.user,
-    password: arg.password
-  });
-
-});
-
-ipcMain.on('add-server', function(event, server) {
+ipcMain.on('add-server', function (event, server) {
   storage.create(server);
   event.returnValue = 'true';
 });
 
-ipcMain.on('delete-server', function(event, server) {
+ipcMain.on('delete-server', function (event, server) {
   storage.delete(server);
   event.returnValue = 'true';
 });
 
-ipcMain.on('get-servers', function(event, ignore) {
+ipcMain.on('get-servers', function (event, ignore) {
   event.returnValue = storage.read();
 });
 
-ipcMain.on('get-plugins', function(event, ignore) {
+ipcMain.on('get-plugins', function (event, ignore) {
   event.returnValue = plugins.list().map(i => i.name);
 });
 
-ipcMain.on('get-plugin-view', function(event, pluginName) {
+ipcMain.on('get-plugin-view', function (event, pluginName) {
   event.returnValue = plugins.list().filter(i => i.name === pluginName).pop().getView();
 });
 
+ipcMain.on('connect', function (event, serverName) {
+  let server = storage.read().filter(i => i.name === serverName).pop();
+
+  serverConnection = new sshClient();
+
+  serverConnection.on('ready', function () {
+    event.sender.send('connect-reply', 'ok');
+    plugins.setSSHConnection(serverConnection);
+  }).connect({
+    host: server.host,
+    port: server.port,
+    username: server.user,
+    password: server.password
+  });
+
+  serverConnection.on('error', function (err) {
+    event.sender.send('connect-reply', err.message);
+  });
+});
+
+ipcMain.on('disconnect', function (event) {
+  plugins.reset();
+  serverConnection.end();
+});
+
+function pluginViewRefreshCallback(data) {
+  win.webContents.send('plugin-view-refresh', data);
+}

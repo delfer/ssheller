@@ -9,6 +9,7 @@
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="css/bootstrap.css">
     <link rel="stylesheet" href="css/bootstrap-select.css">
+    <link rel="stylesheet" href="css/loading.css">
 
     <title>SSHeller</title>
 </head>
@@ -21,6 +22,7 @@
             module = undefined;
         }
     </script>
+    <script src="js/loading.js"></script>
     <script src="js/backend-connector.js"></script>
     <script src="js/jquery.js"></script>
     <script src="js/popper.js"></script>
@@ -38,10 +40,10 @@
             </div>
             <div class="row justify-content-end">
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-primary mb-2" onclick="switchMainView('AddServer')">Add</button>
+                    <button type="button" class="btn btn-primary mb-2" onclick="switchMainView('AddServer')">Add</button>
                 </div>
                 <div class="col-auto">
-                    <button type="submit" class="btn btn-danger mb-2" onclick="deleteServer();switchMainView('ServerList')">Delete</button>
+                    <button type="button" class="btn btn-danger mb-2" onclick="deleteServer()">Delete</button>
                 </div>
             </div>
             <div class="row">
@@ -51,7 +53,7 @@
                     </select>
                 </div>
             </div>
-            <button type="button" class="btn btn-primary btn-lg btn-block" onclick="switchMainView('Plugins')">Connect</button>
+            <button type="button" class="btn btn-primary btn-lg btn-block" onclick="connect()">Connect</button>
         </div>
     </div>
     <!-- ******************** VIEW: Add Server ******************** -->
@@ -110,7 +112,7 @@
                         </div>
 
                         <hr class="mb-4">
-                        <button type="button" class="btn btn-primary btn-lg btn-block" onclick="addServer();switchMainView('ServerList')">Add</button>
+                        <button type="button" class="btn btn-primary btn-lg btn-block" onclick="addServer()">Add</button>
                     </form>
                 </div>
             </div>
@@ -126,15 +128,32 @@
                     </select>
                 </div>
                 <div class="col align-self-center">
-                    Connected to: ...
+                    Connected to: <div id="serverLabel">Loading...</div>
                 </div>
                 <div class="col-auto align-self-center">
-                    <button type="submit" class="btn btn-danger mb-2" onclick="switchMainView('ServerList')">Diconnect</button>
+                    <button type="button" class="btn btn-danger mb-2" onclick="disconnect()">Diconnect</button>
                 </div>
             </div>
-            <div class="row">
-                <div id="PluginContent" class="jumbotron">
+            <div id="PluginContent" class="jumbotron w-100 h-100">
+                Loading...
+            </div>
+        </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="mainModal" tabindex="-1" role="dialog" aria-labelledby="mainModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="mainModalLabel">Loading...</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="mainModalBody">
                     Loading...
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
