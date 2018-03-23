@@ -3,11 +3,12 @@
     "version": "0.1.0",
     "main": "backend.js",
     "dependencies": {
-        "electron": "1.8.3",
-        "ssh2": "0.5.5",
         "aes-js": "3.1.0",
-        "zlib": "1.0.5",
-        "plugin": "0.3.3"
+        "electron": "1.8.3",
+        "plugin": "0.3.3",
+        "ssh2": "0.5.5",
+        "numeral": "2.0.6",
+        "zlib": "1.0.5"
     },
     "devDependencies": {
         "eslint-config-standard": "11.0.0",

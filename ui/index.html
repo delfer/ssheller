@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="css/bootstrap.css">
     <link rel="stylesheet" href="css/bootstrap-select.css">
     <link rel="stylesheet" href="css/loading.css">
+    <link rel="stylesheet" href="css/tauCharts.min.css">
 
     <title>SSHeller</title>
 </head>
@@ -28,6 +29,8 @@
     <script src="js/popper.js"></script>
     <script src="js/bootstrap.js"></script>
     <script src="js/bootstrap-select.js"></script>
+    <script src="js/d3.v3.js"></script>
+    <script src="js/tauCharts.min.js"></script>
     <script src="js/index.js"></script>
 
     <!-- ******************** VIEW: Server List ******************** -->
@@ -128,7 +131,7 @@
                     </select>
                 </div>
                 <div class="col align-self-center">
-                    Connected to: <div id="serverLabel">Loading...</div>
+                    <b>Connected to:</b> <label id="serverLabel">Loading...</label>
                 </div>
                 <div class="col-auto align-self-center">
                     <button type="button" class="btn btn-danger mb-2" onclick="disconnect()">Diconnect</button>
