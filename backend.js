@@ -115,6 +115,10 @@ ipcMain.on('disconnect', function (event) {
   serverConnection.end();
 });
 
+ipcMain.on('plugin-interract', function (event, data) {
+  event.returnValue = plugins.list().filter(i => i.name === activePlugin).pop().interract(data);
+});
+
 function pluginViewRefreshCallback(data, pluginName) {
   if (activePlugin === pluginName) {
     win.webContents.send('plugin-view-refresh', data);

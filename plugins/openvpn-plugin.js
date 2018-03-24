@@ -6,7 +6,7 @@ plugin.name = 'OpenVPN';
 
 plugin.getView = function () {
     return `
-        <button type="button" class="btn btn-success">Install</button>
+        <button type="button" class="btn btn-success" onClick="console.log(pluginInterract({action: 'install'}))">Install</button>
         <script>
         function pluginViewRefreshCallback (data) {
             console.log (data);
@@ -25,6 +25,8 @@ plugin.setSSHConnection = function (ssh) {
 };
 
 plugin.interract = function (data) {
+    console.log(data);
+    return ('OK!');
 };
 
 plugin.reset = function () {

@@ -49,3 +49,7 @@ backend.disconnect = function () {
 ipcRenderer.on('plugin-view-refresh', function (event, data) {
     pluginViewRefreshCallback(data);
 });
+
+backend.pluginInterract = function (data) {
+    return ipcRenderer.sendSync('plugin-interract', data);
+};

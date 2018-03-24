@@ -89,3 +89,7 @@ views.Plugins.activate = function () {
   });
   $list.selectpicker('refresh');
 };
+
+function pluginInterract (data) {
+  return backend.pluginInterract(data);
+}
