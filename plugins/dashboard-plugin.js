@@ -90,7 +90,7 @@ plugin.getView = function () {
 };
 
 plugin.setViewRefreshCallback = function (callback) {
-    sys.callback = callback;
+    sys.callback = function(data) { callback (data, plugin.name); };
 };
 
 plugin.setSSHConnection = function (ssh) {

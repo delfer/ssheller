@@ -1,26 +1,40 @@
 var plugin = {};
 var sys = {};
+var refresher;
 
 plugin.name = 'OpenVPN';
 
 plugin.getView = function () {
-    return '<h1>OpenVPN</h1>';
+    return `
+        <button type="button" class="btn btn-success">Install</button>
+        <script>
+        function pluginViewRefreshCallback (data) {
+            console.log (data);
+        };
+        </script>
+    `;
 };
 
 plugin.setViewRefreshCallback = function (callback) {
-    sys.callback = callback;
+    sys.callback = function(data) { callback (data, plugin.name); };
 };
 
 plugin.setSSHConnection = function (ssh) {
     sys.ssh = ssh;
+    refresher = setInterval(requestData, 1000);
 };
 
 plugin.interract = function (data) {
 };
 
 plugin.reset = function () {
+    clearInterval(refresher);
 };
 
 exports.plugin = function(list, loader) {
     list.push(plugin);
+};
+
+var requestData = function () {
+    sys.callback('hello from VPN!');
 };

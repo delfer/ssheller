@@ -10,6 +10,7 @@ var storage = require('./storage');
 var plugins = require('./plugins-loader');
 
 var serverConnection;
+var activePlugin;
 
 // Храните глобальную ссылку на объект окна, если вы этого не сделаете, окно будет
 // автоматически закрываться, когда объект JavaScript собирает мусор.
@@ -86,6 +87,7 @@ ipcMain.on('get-plugins', function (event, ignore) {
 
 ipcMain.on('get-plugin-view', function (event, pluginName) {
   event.returnValue = plugins.list().filter(i => i.name === pluginName).pop().getView();
+  activePlugin = pluginName;
 });
 
 ipcMain.on('connect', function (event, serverName) {
@@ -113,6 +115,8 @@ ipcMain.on('disconnect', function (event) {
   serverConnection.end();
 });
 
-function pluginViewRefreshCallback(data) {
-  win.webContents.send('plugin-view-refresh', data);
+function pluginViewRefreshCallback(data, pluginName) {
+  if (activePlugin === pluginName) {
+    win.webContents.send('plugin-view-refresh', data);
+  }
 }
