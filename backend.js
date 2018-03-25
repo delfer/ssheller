@@ -9,6 +9,11 @@ var sshClient = require('ssh2').Client;
 var storage = require('./storage');
 var plugins = require('./plugins-loader');
 
+var fs = require('fs'), 
+  Log = require('log');
+log = new Log('debug', fs.createWriteStream('ssheller.log',{ flags: 'a'}));
+CircularJSON = require('circular-json');
+
 var serverConnection;
 var activePlugin;
 
@@ -116,7 +121,13 @@ ipcMain.on('disconnect', function (event) {
 });
 
 ipcMain.on('plugin-interract', function (event, data) {
-  event.returnValue = plugins.list().filter(i => i.name === activePlugin).pop().interract(data);
+  let res = plugins.list().filter(i => i.name === activePlugin).pop().interract(data);
+  if (res) {
+    event.returnValue = res;
+  } else {
+    event.returnValue = true;
+  }
+  
 });
 
 function pluginViewRefreshCallback(data, pluginName) {

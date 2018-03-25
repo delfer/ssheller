@@ -8,7 +8,9 @@
         "plugin": "0.3.3",
         "ssh2": "0.5.5",
         "numeral": "2.0.6",
-        "zlib": "1.0.5"
+        "zlib": "1.0.5",
+        "log": "1.4.0",
+        "circular-json": "0.5.1"
     },
     "devDependencies": {
         "eslint-config-standard": "11.0.0",

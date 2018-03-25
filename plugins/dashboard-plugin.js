@@ -1,4 +1,5 @@
 var numeral = require('numeral');
+var sshell = require('../sshell');
 
 var plugin = {};
 var sys = {};
@@ -90,7 +91,9 @@ plugin.getView = function () {
 };
 
 plugin.setViewRefreshCallback = function (callback) {
-    sys.callback = function(data) { callback (data, plugin.name); };
+    sys.callback = function (data) {
+        callback(data, plugin.name);
+    };
 };
 
 plugin.setSSHConnection = function (ssh) {
@@ -111,52 +114,36 @@ exports.plugin = function (list, loader) {
 };
 
 var requestData = function () {
-    sys.ssh.exec('date', function (err, stream) {
-        if (err) return;
-        stream.on('data', function (res) {
-            data.date = res.toString();
-            sys.callback(data);
-        });
+    sshell.runOnce(sys.ssh, 'date').then(function (res) {
+        data.date = res.toString();
+        sys.callback(data);
     });
 
-    sys.ssh.exec('date -Iseconds', function (err, stream) {
-        if (err) return;
-        stream.on('data', function (res) {
-            data.date_ = res.toString().trim();
-            sys.callback(data);
-        });
+    sshell.runOnce(sys.ssh, 'date -Iseconds').then(function (res) {
+        data.date_ = res.toString().trim();
+        sys.callback(data);
     });
 
-    sys.ssh.exec('uptime', function (err, stream) {
-        if (err) return;
-        stream.on('data', function (res) {
-            data.uptime = res.toString();
-            parseUptime(res.toString());
-            sys.callback(data);
-        });
+    sshell.runOnce(sys.ssh, 'uptime').then(function (res) {
+        data.uptime = res.toString();
+        parseUptime(res.toString());
+        sys.callback(data);
     });
 
-    sys.ssh.exec('free', function (err, stream) {
-        if (err) return;
-        stream.on('data', function (res) {
-            data.free = res;
-            parseFree(res.toString());
-            sys.callback(data);
-        });
+    sshell.runOnce(sys.ssh, 'free').then(function (res) {
+        data.free = res;
+        parseFree(res.toString());
+        sys.callback(data);
     });
 
-    sys.ssh.exec('df /', function (err, stream) {
-        if (err) return;
-        stream.on('data', function (res) {
-            let nums = res.toString().split('\n')[1].match(/\d+/g);
+    sshell.runOnce(sys.ssh, 'df /').then(function (res) {
+        let nums = res.toString().split('\n')[1].match(/\d+/g);
 
-            data.rootfs = {
-                total: numeral(nums[1]*1024+nums[2]*1024).format('0.0b'),
-                used: numeral(nums[1]*1024).format('0.0b')
-            };
-
-            sys.callback(data);
-        });
+        data.rootfs = {
+            total: numeral(nums[1] * 1024 + nums[2] * 1024).format('0.0b'),
+            used: numeral(nums[1] * 1024).format('0.0b')
+        };
+        sys.callback(data);
     });
 };
 
@@ -195,11 +182,11 @@ var parseFree = function (str) {
         if (data.date_)
             data.ram.push({
                 dt: data.date_,
-                val: total*1024,
+                val: total * 1024,
                 name: 'total'
-            },{
+            }, {
                 dt: data.date_,
-                val: used*1024,
+                val: used * 1024,
                 name: 'used'
             });
         if (data.ram.length > 50) {
@@ -209,34 +196,25 @@ var parseFree = function (str) {
 };
 
 var collectStatic = function () {
-    sys.ssh.exec('hostname -f', function (err, stream) {
-        if (err) return;
-        stream.on('data', function (res) {
-            data.hostname = res;
-        });
+    sshell.runOnce(sys.ssh, 'hostname -f').then(function (res) {
+        data.hostname = res;
     });
 
-    sys.ssh.exec('grep -c vendor_id /proc/cpuinfo', function (err, stream) {
-        if (err) return;
-        stream.on('data', function (res) {
-            data.cpu_count = res.toString();
-        });
+    sshell.runOnce(sys.ssh, 'grep -c vendor_id /proc/cpuinfo').then(function (res) {
+        data.cpu_count = res.toString();
     });
 
-    sys.ssh.exec('cat /etc/*-release', function (err, stream) {
-        if (err) return;
-        stream.on('data', function (res) {
-            let pretty = res.toString().match(/PRETTY_NAME="(.+)"/);
-            if (pretty) {
-                data.os = pretty[1];
+    sshell.runOnce(sys.ssh, 'cat /etc/*-release').then(function (res) {
+        let pretty = res.toString().match(/PRETTY_NAME="(.+)"/);
+        if (pretty) {
+            data.os = pretty[1];
+        } else {
+            let description = res.toString().match(/DISTRIB_DESCRIPTION="(.+)"/);
+            if (description) {
+                data.os = description[1];
             } else {
-                let description = res.toString().match(/DISTRIB_DESCRIPTION="(.+)"/);
-                if (description) {
-                    data.os = description[1];
-                } else {
-                    data.os = res.toString();
-                }
+                data.os = res.toString();
             }
-        });
+        }
     });
 };
