@@ -114,29 +114,29 @@ exports.plugin = function (list, loader) {
 };
 
 var requestData = function () {
-    sshell.runOnce(sys.ssh, 'date').then(function (res) {
+    sshell.runCmd(sys.ssh, 'date').then(function (res) {
         data.date = res.toString();
         sys.callback(data);
     });
 
-    sshell.runOnce(sys.ssh, 'date -Iseconds').then(function (res) {
+    sshell.runCmd(sys.ssh, 'date -Iseconds').then(function (res) {
         data.date_ = res.toString().trim();
         sys.callback(data);
     });
 
-    sshell.runOnce(sys.ssh, 'uptime').then(function (res) {
+    sshell.runCmd(sys.ssh, 'uptime').then(function (res) {
         data.uptime = res.toString();
         parseUptime(res.toString());
         sys.callback(data);
     });
 
-    sshell.runOnce(sys.ssh, 'free').then(function (res) {
+    sshell.runCmd(sys.ssh, 'free').then(function (res) {
         data.free = res;
         parseFree(res.toString());
         sys.callback(data);
     });
 
-    sshell.runOnce(sys.ssh, 'df /').then(function (res) {
+    sshell.runCmd(sys.ssh, 'df /').then(function (res) {
         let nums = res.toString().split('\n')[1].match(/\d+/g);
 
         data.rootfs = {
@@ -196,15 +196,15 @@ var parseFree = function (str) {
 };
 
 var collectStatic = function () {
-    sshell.runOnce(sys.ssh, 'hostname -f').then(function (res) {
+    sshell.runCmd(sys.ssh, 'hostname -f').then(function (res) {
         data.hostname = res;
     });
 
-    sshell.runOnce(sys.ssh, 'grep -c vendor_id /proc/cpuinfo').then(function (res) {
+    sshell.runCmd(sys.ssh, 'grep -c vendor_id /proc/cpuinfo').then(function (res) {
         data.cpu_count = res.toString();
     });
 
-    sshell.runOnce(sys.ssh, 'cat /etc/*-release').then(function (res) {
+    sshell.runCmd(sys.ssh, 'cat /etc/*-release').then(function (res) {
         let pretty = res.toString().match(/PRETTY_NAME="(.+)"/);
         if (pretty) {
             data.os = pretty[1];

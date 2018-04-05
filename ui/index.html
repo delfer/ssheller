@@ -51,7 +51,7 @@
             </div>
             <div class="row">
                 <div class="form-group container">
-                    <select class="form-control" id="serverSelector" size="16">
+                    <select class="form-control" id="serverSelector" ondblclick="connect()" size="16">
                         <option>loading</option>
                     </select>
                 </div>
@@ -109,13 +109,34 @@
                                 <label for="password">Password</label>
                                 <input class="form-control" id="password" placeholder="" value="root" required="" type="password">
                                 <div class="invalid-feedback">
-                                    Valid port is required.
+                                    Valid password is required.
                                 </div>
                             </div>
                         </div>
 
-                        <hr class="mb-4">
-                        <button type="button" class="btn btn-primary btn-lg btn-block" onclick="addServer()">Add</button>
+                        <div class="row align-items-top">
+                            <div class="col">
+                                <div class="card">
+                                    <div class="card-header" id="headingOne">
+                                        <button type="button" class="btn btn-sm btn-secondary" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                            Optoinal: root password
+                                        </button>
+                                    </div>
+
+                                    <div id="collapseOne" class="collapse" aria-labelledby="headingOne">
+                                        <div class="card-body">
+                                            <input class="form-control" id="rootPassword" placeholder="" value="root" required="" type="password">
+                                            <div class="invalid-feedback">
+                                                Valid root password is required.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-primary btn-lg btn-block m-1" onclick="addServer()">Add</button>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -131,10 +152,11 @@
                     </select>
                 </div>
                 <div class="col align-self-center">
-                    <b>Connected to:</b> <label id="serverLabel">Loading...</label>
+                    <b>Connected to:</b>
+                    <label id="serverLabel">Loading...</label>
                 </div>
                 <div class="col-auto align-self-center">
-                    <button type="button" class="btn btn-danger mb-2" onclick="disconnect()">Diconnect</button>
+                    <button type="button" class="btn btn-danger mb-2" onclick="disconnect()">Disconnect</button>
                 </div>
             </div>
             <div id="PluginContent" class="jumbotron w-100 h-100">

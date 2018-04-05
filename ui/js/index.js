@@ -17,6 +17,7 @@ function addServer() {
     port: $('#port').val(),
     user: $('#user').val(),
     password: $('#password').val(),
+    rootPassword: $('#rootPassword').val(),
     key: undefined
   };
 

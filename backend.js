@@ -101,8 +101,10 @@ ipcMain.on('connect', function (event, serverName) {
   serverConnection = new sshClient();
 
   serverConnection.on('ready', function () {
-    event.sender.send('connect-reply', 'ok');
+    serverConnection.config.rootPassword = server.rootPassword; //It's not needed by ssh2, but config here used just as storage
     plugins.setSSHConnection(serverConnection);
+    log.debug('con: %s', CircularJSON.stringify(serverConnection).replace(/("\w*password\w*"\s*:\s*)"[^"]*"/gi, '$1"XXX"'));
+    event.sender.send('connect-reply', 'ok');
   }).connect({
     host: server.host,
     port: server.port,
