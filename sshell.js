@@ -9,30 +9,36 @@ exports.runCmd = function (con, command) {
     return exports.runCmdInteractive(con, command);
 };
 
-exports.runCmdAsRootMethod = function (con, command, method) {
+exports.runCmdAsRootMethod = function (con, command, method, forceBreak) {
+
+    var ctrlC = '';
+    if (forceBreak) {
+        ctrlC = '\x03';
+    }
+
     switch (method) {
         case PEM.JUST_ROOT:
             return exports.runCmd(con, command);
         case PEM.SUDO_NO_PASSWD:
-            return exports.runCmd(con, 'sudo ' + command);
+            return exports.runCmd(con, 'sudo -- sh -c \'' + command.replace(/'/g,'\'') + '\'');
         case PEM.SUDO_PASSWD:
-            return exports.runCmdInteractive(con, 'sudo ' + command, [{
+            return exports.runCmdInteractive(con, 'sudo -- sh -c \'' + command.replace(/'/g,'\'') + '\'', [{
                     regex: /:\s*$/,
                     answer: con.config.password + '\n'
                 },
                 {
                     regex: /:\s*$/,
-                    answer: '\x03' //Ctrl-C for try again
+                    answer: ctrlC //Ctrl-C for try again
                 }
             ]);
         case PEM.SU:
-            return exports.runCmdInteractive(con, 'su -c ' + command, [{
+            return exports.runCmdInteractive(con, 'su -c  \'' + command.replace(/'/g,'\'') + '\'', [{
                     regex: /:\s*$/,
                     answer: con.config.rootPassword + '\n'
                 },
                 {
                     regex: /:\s*$/,
-                    answer: '\x03' //Ctrl-C for try again
+                    answer: ctrlC //Ctrl-C for try again
                 }
             ]);
         default:
@@ -119,7 +125,7 @@ var detectPrivilegeEscalationMethod = function (con) {
 
         //Sudo with password
         var checkSudoPasswd = function () {
-            exports.runCmdAsRootMethod(con, 'whoami', PEM.SUDO_PASSWD)
+            exports.runCmdAsRootMethod(con, 'whoami', PEM.SUDO_PASSWD, true)
             .then(function (data) {
                 if (/\s*root\s*/.test(data)) {
                     con.privilegeEscalationMethod = PEM.SUDO_PASSWD;
@@ -132,7 +138,7 @@ var detectPrivilegeEscalationMethod = function (con) {
 
         //Su
         var checkSu = function () {
-            exports.runCmdAsRootMethod(con, 'whoami', PEM.SU)
+            exports.runCmdAsRootMethod(con, 'whoami', PEM.SU, true)
             .then(function (data) {
                 if (/\s*root\s*/.test(data)) {
                     con.privilegeEscalationMethod = PEM.SU;
