@@ -1,6 +1,7 @@
 plugin = require("plugin");
 
 plugins = [];
+sharedScripts = {};
 
 exports.load = function (pluginViewRefreshCallback) {
     plugin(plugins).
