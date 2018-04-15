@@ -20,9 +20,9 @@ exports.runCmdAsRootMethod = function (con, command, method, forceBreak) {
         case PEM.JUST_ROOT:
             return exports.runCmd(con, command);
         case PEM.SUDO_NO_PASSWD:
-            return exports.runCmd(con, 'sudo -- sh -c \'' + command.replace(/'/g, '\'') + '\'');
+            return exports.runCmd(con, 'sudo -H -i -- sh -c \'' + command.replace(/'/g, '\'') + '\'');
         case PEM.SUDO_PASSWD:
-            return exports.runCmdInteractive(con, 'sudo -- sh -c \'' + command.replace(/'/g, '\'') + '\'', [{
+            return exports.runCmdInteractive(con, 'sudo -H -i -- sh -c \'' + command.replace(/'/g, '\'') + '\'', [{
                     regex: /:\s*$/,
                     answer: con.config.password + '\n'
                 },
@@ -32,7 +32,7 @@ exports.runCmdAsRootMethod = function (con, command, method, forceBreak) {
                 }
             ]);
         case PEM.SU:
-            return exports.runCmdInteractive(con, 'su -c  \'' + command.replace(/'/g, '\'') + '\'', [{
+            return exports.runCmdInteractive(con, 'su - -c  \'' + command.replace(/'/g, '\'') + '\'', [{
                     regex: /:\s*$/,
                     answer: con.config.rootPassword + '\n'
                 },
@@ -48,12 +48,16 @@ exports.runCmdAsRootMethod = function (con, command, method, forceBreak) {
 
 exports.runCmdAsRoot = function (con, command) {
     return detectPrivilegeEscalationMethod(con).then((method) => {
-        exports.runCmdAsRootMethod(con, command, method);
+        return exports.runCmdAsRootMethod(con, command, method);
     });
 };
 
 exports.runBashScriptAsRoot = function (con, script, args) {
     var script64 = Buffer.from(script, 'binary').toString('base64');
+
+    if (!args) {
+        args = '';
+    }
 
     var command = 'echo ' + script64 + ' | base64 -d | /bin/bash /dev/stdin ' + args;
 
