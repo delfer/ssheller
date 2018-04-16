@@ -24,6 +24,7 @@ exports.read = function () {
 };
 
 exports.create = function (server) {
+  exports.delete (server);
   var servers = exports.read();
   servers.push(server);
   write(servers);

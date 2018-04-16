@@ -41,12 +41,15 @@
                     <h2>Servers list</h2>
                 </div>
             </div>
-            <div class="row justify-content-end">
+            <div class="row">
                 <div class="col-auto">
-                    <button type="button" class="btn btn-primary mb-2" onclick="switchMainView('AddServer')">Add</button>
+                    <button type="button" class="btn btn-warning mb-2" onclick="editServer()">Edit</button>
                 </div>
                 <div class="col-auto">
                     <button type="button" class="btn btn-danger mb-2" onclick="deleteServer()">Delete</button>
+                </div>
+                <div class="col-auto ml-auto">
+                    <button type="button" class="btn btn-success mb-2" onclick="switchMainView('AddServer')">Add</button>
                 </div>
             </div>
             <div class="row">
@@ -65,11 +68,11 @@
             <div class="row">
                 <div class="col-md-12 order-md-1">
                     <h4 class="mb-3">Server</h4>
-                    <form class="needs-validation" novalidate="" _lpchecked="1">
+                    <form id="addServerForm" class="needs-validation" novalidate>
                         <div class="row">
                             <div class="col-md-12 mb-3">
                                 <label for="host">Name</label>
-                                <input class="form-control" id="name" placeholder="" value="Server" required="" type="text">
+                                <input class="form-control" id="name" placeholder="Server name" value="" type="text">
                                 <div class="invalid-feedback">
                                     Valid name is required.
                                 </div>
@@ -78,14 +81,14 @@
                         <div class="row">
                             <div class="col-md-10 mb-3">
                                 <label for="host">Host</label>
-                                <input class="form-control" id="host" placeholder="" value="10.236.200.154" required="" type="text">
+                                <input class="form-control" id="host" placeholder="Domain or IP" value="" type="text" required>
                                 <div class="invalid-feedback">
                                     Valid host is required.
                                 </div>
                             </div>
                             <div class="col-md-2 mb-3">
                                 <label for="port">Port</label>
-                                <input class="form-control" id="port" placeholder="" value="22" required="" type="text">
+                                <input class="form-control" id="port" placeholder="22" value="22" type="text" required>
                                 <div class="invalid-feedback">
                                     Valid port is required.
                                 </div>
@@ -99,7 +102,7 @@
                                     <div class="input-group-prepend">
                                         <span class="input-group-text">@</span>
                                     </div>
-                                    <input class="form-control" id="user" placeholder="" value="root" required="" type="text">
+                                    <input class="form-control" id="user" placeholder="User name" value="" type="text" required>
                                     <div class="invalid-feedback" style="width: 100%;">
                                         Your username is required.
                                     </div>
@@ -107,7 +110,7 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label for="password">Password</label>
-                                <input class="form-control" id="password" placeholder="" value="root" required="" type="password">
+                                <input class="form-control" id="password" placeholder="password" value="" type="password">
                                 <div class="invalid-feedback">
                                     Valid password is required.
                                 </div>
@@ -118,14 +121,15 @@
                             <div class="col">
                                 <div class="card">
                                     <div class="card-header" id="headingOne">
-                                        <button type="button" class="btn btn-sm btn-secondary" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                                        <button type="button" class="btn btn-sm btn-secondary" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false"
+                                            aria-controls="collapseOne">
                                             Optoinal: root password
                                         </button>
                                     </div>
 
                                     <div id="collapseOne" class="collapse" aria-labelledby="headingOne">
                                         <div class="card-body">
-                                            <input class="form-control" id="rootPassword" placeholder="" value="root" required="" type="password">
+                                            <input class="form-control" id="rootPassword" placeholder="root password" value="" type="password">
                                             <div class="invalid-feedback">
                                                 Valid root password is required.
                                             </div>
@@ -134,7 +138,7 @@
                                 </div>
                             </div>
                             <div class="col">
-                                <button type="button" class="btn btn-primary btn-lg btn-block m-1" onclick="addServer()">Add</button>
+                                <button type="button" class="btn btn-primary btn-lg btn-block m-1" onclick="saveServer()">Save</button>
                             </div>
                         </div>
                     </form>

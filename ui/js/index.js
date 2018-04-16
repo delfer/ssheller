@@ -10,9 +10,22 @@ function switchMainView(view) {
   eval('views.' + view + '.activate();');
 }
 
-function addServer() {
+function saveServer() {
+  var form =  document.getElementById('addServerForm');
+
+  if (form.checkValidity() === false) {
+    form.classList.add('was-validated');
+    return;
+  }
+
+  var serverName = $('#name').val();
+
+  if (!serverName || serverName.length === 0) {
+    serverName = $('#user').val() + '@' + $('#host').val() + ':' + $('#port').val();
+  }
+
   let server = {
-    name: $('#name').val(),
+    name: serverName,
     host: $('#host').val(),
     port: $('#port').val(),
     user: $('#user').val(),
@@ -23,6 +36,16 @@ function addServer() {
 
   backend.addServer(server);
   switchMainView('ServerList');
+
+  //Reset entered values
+  $('#name').val($('#name').attr('value'));
+  $('#host').val($('#host').attr('value'));
+  $('#port').val($('#port').attr('value'));
+  $('#user').val($('#user').attr('value'));
+  $('#password').val($('#password').attr('value'));
+  $('#rootPassword').val($('#rootPassword').attr('value'));
+
+  form.classList.remove('was-validated');
 }
 
 function deleteServer() {
@@ -32,6 +55,23 @@ function deleteServer() {
 
   backend.deleteServer(server);
   switchMainView('ServerList');
+}
+
+function editServer() {
+  var serverName = $("#serverSelector option:selected").text();
+
+  var server = backend.getServers().filter((s) => {
+    return s.name === serverName;
+  }).shift();
+
+  $('#name').val(server.name);
+  $('#host').val(server.host);
+  $('#port').val(server.port);
+  $('#user').val(server.user);
+  $('#password').val(server.password);
+  $('#rootPassword').val(server.rootPassword);
+
+  switchMainView('AddServer');
 }
 
 function connect() {
@@ -63,7 +103,6 @@ viewServerList = {};
 views.ServerList.activate = function () {
   var servers = backend.getServers();
   var $list = $('#serverSelector');
-  $('#serverSelector').empty();
   $list.empty();
   $.each(servers, function () {
     $list.append($("<option />").text(this.name));
@@ -91,6 +130,6 @@ views.Plugins.activate = function () {
   $list.selectpicker('refresh');
 };
 
-function pluginInterract (data) {
+function pluginInterract(data) {
   return backend.pluginInterract(data);
 }
