@@ -1,3 +1,14 @@
+const shell = require('electron').shell;
+
+var fixExtLinks = function () {
+  $('a.ext').click((event) => {
+    event.preventDefault();
+    shell.openExternal(event.target.href);
+  });
+};
+
+fixExtLinks();
+
 views = {
   ServerList: {},
   AddServer: {},
@@ -11,7 +22,7 @@ function switchMainView(view) {
 }
 
 function saveServer() {
-  var form =  document.getElementById('addServerForm');
+  var form = document.getElementById('addServerForm');
 
   if (form.checkValidity() === false) {
     form.classList.add('was-validated');
@@ -115,6 +126,7 @@ views.Plugins.activate = function () {
   let selFunc = function () {
     let pluginName = $('#pluginSelector option:selected').text();
     $('#PluginContent').html(backend.getPluginView(pluginName));
+    fixExtLinks();
   };
 
   var plugins = backend.getPlugins();

@@ -80,8 +80,8 @@ plugin.getView = function () {
             </div>
             <div id="collapseCredits" class="collapse">
                 <div class="card-body">
-                Based on https://github.com/Angristan/OpenVPN-install <br />
-                which based on https://github.com/Nyr/openvpn-install
+                Based on <a class='ext' href='https://github.com/Angristan/OpenVPN-install'>OpenVPN-install by Angristan</a><br/>
+                which forked from <a class='ext' href='https://github.com/Nyr/openvpn-install'>OpenVPN-install by Nyr</a>
                 </div>
             </div>
         </div>
