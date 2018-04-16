@@ -9,9 +9,11 @@ var sshClient = require('ssh2').Client;
 var storage = require('./storage');
 var plugins = require('./plugins-loader');
 
-var fs = require('fs'), 
+var fs = require('fs'),
   Log = require('log');
-log = new Log('debug', fs.createWriteStream('ssheller.log',{ flags: 'a'}));
+log = new Log('debug', fs.createWriteStream('ssheller.log', {
+  flags: 'a'
+}));
 CircularJSON = require('circular-json');
 
 var serverConnection;
@@ -73,17 +75,17 @@ app.on('activate', () => {
 });
 
 ipcMain.on('add-server', function (event, server) {
-  storage.create(server);
+  storage.createServer(server);
   event.returnValue = 'true';
 });
 
 ipcMain.on('delete-server', function (event, server) {
-  storage.delete(server);
+  storage.deleteServer(server);
   event.returnValue = 'true';
 });
 
 ipcMain.on('get-servers', function (event, ignore) {
-  event.returnValue = storage.read();
+  event.returnValue = storage.readServers();
 });
 
 ipcMain.on('get-plugins', function (event, ignore) {
@@ -96,7 +98,7 @@ ipcMain.on('get-plugin-view', function (event, pluginName) {
 });
 
 ipcMain.on('connect', function (event, serverName) {
-  let server = storage.read().filter(i => i.name === serverName).pop();
+  let server = storage.readServers().filter(i => i.name === serverName).pop();
 
   serverConnection = new sshClient();
 
@@ -129,11 +131,11 @@ ipcMain.on('plugin-interract', function (event, data) {
   } else {
     event.returnValue = true;
   }
-  
+
 });
 
 function pluginViewRefreshCallback(data, pluginName) {
   if (activePlugin === pluginName) {
-    win.webContents.send('plugin-view-refresh', data);
+    return win.webContents.send('plugin-view-refresh', data);
   }
 }
