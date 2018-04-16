@@ -44,6 +44,23 @@ plugin.getView = function () {
         <div id="cpu-chart" class="dash-chart border border-info m-1"></div>
         <div id="ram-chart" class="dash-chart border border-info m-1"></div>
     </div>
+
+    <hr/>
+
+    <!-- Credits -->
+    <div class="card mt-4">
+        <div class="card-header">
+            <a class="card-link" data-toggle="collapse" href="#collapseCredits">
+            Credits
+            </a>
+        </div>
+        <div id="collapseCredits" class="collapse">
+            <div class="card-body">
+            Based on <a class='ext' href='https://www.taucharts.com/'>TauCharts</a>
+            </div>
+        </div>
+    </div>
+
     <script>
     defaultChartConfig = {
         data: [{dt:'2018-03-23T18:54:21+03:00', val:0}],
@@ -105,7 +122,6 @@ plugin.setSSHConnection = function (ssh) {
 plugin.interract = function (data) {};
 
 plugin.reset = function () {
-    console.log("dash stoped");
     clearInterval(refresher);
 };
 
