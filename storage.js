@@ -42,31 +42,14 @@ exports.createServer = function (server) {
 };
 
 exports.deleteServer = function (server) {
-  var servers = exports.readServers();
-
-  for (var s in servers) {
-    var del = true;
-    for (var property in server) {
-      let a = server[property];
-      let b = servers[s][property];
-      if (!a) {
-        a = undefined;
-      }
-      if (!b) {
-        b = undefined;
-      }
-
-      if (server.hasOwnProperty(property)) {
-        if (a !== b) {
-          del = false;
-          break;
-        }
-      }
-    }
-    if (del) {
-      servers.splice(s, 1);
-    }
+  if (!server.name) {
+    return;
   }
+
+  var servers = exports.readServers()
+    .filter(function (s) {
+      return (s.name !== server.name);
+    });
 
   writeServers(servers);
 };
