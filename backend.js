@@ -111,7 +111,8 @@ ipcMain.on('connect', function (event, serverName) {
     host: server.host,
     port: server.port,
     username: server.user,
-    password: server.password
+    password: server.password,
+    privateKey: server.key
   });
 
   serverConnection.on('error', function (err) {
