@@ -1,5 +1,7 @@
 const shell = require('electron').shell;
 
+var tempServerKey;
+
 var fixExtLinks = function () {
   $('a.ext').click((event) => {
     event.preventDefault();

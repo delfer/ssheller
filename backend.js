@@ -107,13 +107,19 @@ ipcMain.on('connect', function (event, serverName) {
     plugins.setSSHConnection(serverConnection);
     log.debug('con: %s', CircularJSON.stringify(serverConnection).replace(/("\w*password\w*"\s*:\s*)"[^"]*"/gi, '$1"XXX"'));
     event.sender.send('connect-reply', 'ok');
-  }).connect({
+  });
+
+  try {
+    serverConnection.connect({
     host: server.host,
     port: server.port,
     username: server.user,
     password: server.password,
     privateKey: server.key
   });
+  } catch (e) {
+    event.sender.send('connect-reply', e.message);
+  }
 
   serverConnection.on('error', function (err) {
     event.sender.send('connect-reply', err.message);

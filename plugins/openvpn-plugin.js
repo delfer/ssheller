@@ -166,7 +166,7 @@ plugin.getView = function () {
                 $('#clientsDiv').addClass('d-none');
             }
 
-            if (state.report.takeFile) {
+            if (state.report && state.report.takeFile) {
                 saveAs(state.report.takeFile.body,state.report.takeFile.name);
                 pluginInterract({gotReport: true});
             }
