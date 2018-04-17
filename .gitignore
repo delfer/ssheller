@@ -2,3 +2,4 @@ node_modules
 *.stackdump
 storage.dat*
 *.log
+*.log.txt

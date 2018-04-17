@@ -9,10 +9,12 @@ var sshClient = require('ssh2').Client;
 var storage = require('./storage');
 var plugins = require('./plugins-loader');
 
-var fs = require('fs'),
-  Log = require('log');
-log = new Log('debug', fs.createWriteStream('ssheller.log', {
-  flags: 'a'
+var Log = require('log');
+var rfs = require('rotating-file-stream');
+log = new Log('debug', rfs('ssheller.log', {
+  size: '1M', // rotate every 1 MegaBytes written
+  compress: 'gzip', // compress rotated files
+  maxFiles: 3
 }));
 CircularJSON = require('circular-json');
 
@@ -111,12 +113,12 @@ ipcMain.on('connect', function (event, serverName) {
 
   try {
     serverConnection.connect({
-    host: server.host,
-    port: server.port,
-    username: server.user,
-    password: server.password,
-    privateKey: server.key
-  });
+      host: server.host,
+      port: server.port,
+      username: server.user,
+      password: server.password,
+      privateKey: server.key
+    });
   } catch (e) {
     event.sender.send('connect-reply', e.message);
   }
