@@ -68,8 +68,7 @@ function saveServer() {
     $('#user').val($('#user').attr('value'));
     $('#password').val($('#password').attr('value'));
     $('#rootPassword').val($('#rootPassword').attr('value'));
-    $('#keyFile').val('');
-    tempServerKey = undefined;
+    resetKeyFileInput();
 
     form.classList.remove('was-validated');
   };
@@ -88,7 +87,12 @@ function saveServer() {
   } else {
     continueAfterUpload();
   }
+}
 
+function resetKeyFileInput() {
+  $('#keyFile').val('');
+  tempServerKey = undefined;
+  $('#keyFileResetBtn').addClass('disabled');
 }
 
 function deleteServer() {
@@ -115,6 +119,12 @@ function editServer() {
   $('#rootPassword').val(server.rootPassword);
 
   tempServerKey = server.key;
+
+  if (tempServerKey) {
+    $('#keyFileResetBtn').removeClass('disabled');
+  } else {
+    $('#keyFileResetBtn').addClass('disabled');
+  }
 
   switchMainView('AddServer');
 }
@@ -154,7 +164,11 @@ views.ServerList.activate = function () {
   });
 };
 
-views.AddServer.activate = function () {};
+views.AddServer.activate = function () {
+  $("#keyFile").change(function () {
+    $('#keyFileResetBtn').removeClass('disabled');
+  });
+};
 
 views.Plugins.activate = function () {
   let selFunc = function () {

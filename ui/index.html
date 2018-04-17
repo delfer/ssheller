@@ -117,9 +117,15 @@
                             </div>
                         </div>
 
-                        <div class="custom-file mb-3">
-                            <input type="file" class="custom-file-input" id="keyFile">
-                            <label class="custom-file-label" for="keyFile">Private key</label>
+                        <div class="row  mb-3">
+                            <div class="col">
+                                <div class="custom-file">
+                                    <input type="file" class="custom-file-input" id="keyFile">
+                                    <label class="custom-file-label" for="keyFile">Private key</label>
+                                </div>
+                            </div>
+                            <div class="col-auto"></div>
+                            <button type="button" id="keyFileResetBtn" class="btn btn-outline-danger btn-sm" onclick="resetKeyFileInput()">Reset</button>
                         </div>
 
                         <div class="row align-items-top">
