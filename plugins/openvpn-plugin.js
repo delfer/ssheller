@@ -9,8 +9,7 @@ var refresher;
 
 var uiCallback;
 
-var state = {};
-    state.report = {};
+var state = {report: {}};
 
 plugin.name = 'OpenVPN';
 
@@ -208,6 +207,7 @@ plugin.getView = function () {
             document.body.removeChild(link);
         }
 
+        pluginInterract({refresh: true});
         </script>
     `;
 };
@@ -220,7 +220,8 @@ plugin.setViewRefreshCallback = function (callback) {
 
 plugin.setSSHConnection = function (ssh) {
     con = ssh;
-    refresher = setInterval(requestData, 1000);
+    // Reset state
+    state = {report: {}};
     detectOS();
     getStatus();
     getClients();
@@ -237,11 +238,12 @@ plugin.interract = function (request) {
         getFile(request.getFile);
     }  else if (request.gotReport) {
         state.report = {};
-    } 
+    } else if (request.refresh) {
+        uiCallback();
+    }
 };
 
 plugin.reset = function () {
-    clearInterval(refresher);
 };
 
 exports.plugin = function (list, loader) {
@@ -303,13 +305,14 @@ var detectOS = function () {
         } else if (/arch linux/i.test(state.osName)) {
             state.osFamaly = 'a';
         }
+        uiCallback();
     });
 };
 
 var getStatus = function () {
     var statusScript = script.replace(/^\s*read .*$/mg, 'exit');
 
-    return sshell.runBashScriptAsRoot(con, statusScript).then((s) => {
+    sshell.runBashScriptAsRoot(con, statusScript).then((s) => {
         if (/I need to know the IPv4 address/i.test(s)) {
             state.readyToInstall = true;
         } else if (/is not supported/i.test(s) ||
@@ -318,8 +321,10 @@ var getStatus = function () {
         } else if (/Looks like OpenVPN is already installed/i.test(s)) {
             state.installed = true;
         }
+        uiCallback();
     }, (s) => {
         state.internalError = true;
+        uiCallback();
     });
 };
 
@@ -343,16 +348,14 @@ var installOpenVPN = function () {
         state.report.text = s;
 
         state.installationInProgress = false;
-        getStatus().
-            then (() => getClients()).
-            then (() => uiCallback());
+        getStatus();
+        getClients();
     }, (s) => {
         state.report.success = false;
         state.report.text = s;
 
         state.installationInProgress = false;
-        getStatus().
-            then (() => uiCallback());
+        getStatus();
     });
 };
 
@@ -366,20 +369,18 @@ var uninstallOpenVPN = function () {
     state.installed = false;
     uiCallback();
 
-    return sshell.runBashScriptAsRoot(con, uninstallScript).then((s) => {
+    sshell.runBashScriptAsRoot(con, uninstallScript).then((s) => {
         state.report.success = true;
         state.report.text = s;
 
         state.uninstallationInProgress = false;
-        getStatus().
-            then (() => uiCallback());
+        getStatus();
     }, (s) => {
         state.report.success = false;
         state.report.text = s;
 
         state.uninstallationInProgress = false;
-        getStatus().
-            then (() => uiCallback());
+        getStatus();
     });
 };
 
@@ -389,27 +390,26 @@ var addNewClient = function (name) {
     replace(/^\s*read.*(CLIENT)/mg, '$1="' + name + '"; echo "$$$1"'); // New clint's name
 
     return sshell.runBashScriptAsRoot(con, addClientScript).
-        then(() => getClients()).
-        then(() => uiCallback());
+        then(() => getClients());
 };
 
 var getClients = function () {
-    return sshell.runCmdAsRoot(con, "ls *.ovpn | cat").then((s) => {
+    sshell.runCmdAsRoot(con, "ls *.ovpn | cat").then((s) => {
         state.clients = s.trim().split(/\s*[\r\n]+\s*/g);
         state.clients = state.clients.filter ((s) => {return !s.includes(':');});
         uiCallback();
     }, (s) => {
-        //Ignore
+        uiCallback();
     });
 };
 
 var getFile = function (file) {
-    return sshell.runCmdAsRoot(con, "echo \"|\"; cat \"" + file + "\" | base64; echo \"|\"").then((s) => {
+    sshell.runCmdAsRoot(con, "echo \"|\"; cat \"" + file + "\" | base64; echo \"|\"").then((s) => {
         s = s.replace(/[\r\n]/g, '');
         var base64 = /\|((?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?)\|/.exec(s)[1];
         state.report.takeFile = {name: file, body: base64};
         uiCallback();
     }, (s) => {
-        //Ignore
+        uiCallback();
     });
 };
