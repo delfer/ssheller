@@ -73,7 +73,9 @@ exports.runCmdInteractive = function (con, command, reactions) {
     var stderr = '';
     var reactionN = 0;
     return new Promise(function (resolve, reject) {
-        con.exec(command, {
+
+        var makeTry = function () {
+            var isSuccessful = con.exec(command, {
             pty: reactions != undefined
         }, function (err, stream) {
             if (err) {
@@ -86,7 +88,7 @@ exports.runCmdInteractive = function (con, command, reactions) {
                     if (code === undefined || code === 0) { // Bugfix: on shutdown code === undefined
                         resolve(stdout);
                     } else {
-                        reject(stderr);
+                            reject(stderr); // DO: Your password has expired.\nPassword change required but no TTY available.
                     }
                 })
                 .on('data', function (data) {
@@ -101,6 +103,14 @@ exports.runCmdInteractive = function (con, command, reactions) {
                     stderr += data;
                 });
         });
+
+            if (!isSuccessful) {
+                con.on('continue', makeTry);
+            }
+        };
+
+        makeTry();
+
     });
 };
 
