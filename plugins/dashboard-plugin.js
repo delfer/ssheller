@@ -2,11 +2,15 @@ var numeral = require('numeral');
 var sshell = require('../sshell');
 
 var plugin = {};
-var sys = {};
-var data = {};
-data.cpu = [];
-data.ram = [];
+
 var refresher;
+
+var uiCallback;
+var con;
+var state = {
+    cpu: [],
+    ram: []
+};
 
 plugin.name = 'Dashboard';
 
@@ -32,7 +36,7 @@ plugin.getView = function () {
             <label id="cpu-cores">Loading...</label>
         </div>
         <div class="col-auto border border-success m-1 text-center">
-            <b>Disk usage (/):</b><br\>
+            <b>Disk used (/):</b><br\>
             <label id="disk-used">Loading...</label> of <label id="disk-total">Loading...</label>
         </div>
         <div class="col-auto border border-success m-1 text-center">
@@ -92,12 +96,14 @@ plugin.getView = function () {
     ramChart = new tauCharts.Chart(ramChartConfig);
 
     function pluginViewRefreshCallback (data) {
-        $('#hostname').html(data.hostname.toString());
-        $('#date').html(data.date.toString());
-        $('#cpu-cores').html(data.cpu_count.toString());
-        $('#disk-used').html(data.rootfs.used.toString());
-        $('#disk-total').html(data.rootfs.total.toString());
-        $('#os-lb').html(data.os.toString());
+        $('#hostname').html(data.hostname);
+        $('#date').html(data.date);
+        $('#cpu-cores').html(data.cpu_count);
+        $('#os-lb').html(data.os);
+        if (data.rootfs) {
+            $('#disk-used').html(data.rootfs.used);
+            $('#disk-total').html(data.rootfs.total);
+        };
         cpuChart.setData(data.cpu);
         cpuChart.renderTo('#cpu-chart');
         ramChart.setData(data.ram);
@@ -108,18 +114,18 @@ plugin.getView = function () {
 };
 
 plugin.setViewRefreshCallback = function (callback) {
-    sys.callback = function (data) {
-        callback(data, plugin.name);
+    uiCallback = function () {
+        callback(state, plugin.name);
     };
 };
 
 plugin.setSSHConnection = function (ssh) {
-    sys.ssh = ssh;
-    refresher = setInterval(requestData, 1000);
+    con = ssh;
+    refresher = setInterval(requestData, 10000);
     collectStatic();
 };
 
-plugin.interract = function (data) {};
+plugin.interract = function (request) {};
 
 plugin.reset = function () {
     clearInterval(refresher);
@@ -130,49 +136,49 @@ exports.plugin = function (list, loader) {
 };
 
 var requestData = function () {
-    sshell.runCmd(sys.ssh, 'date').then((res) => {
-        data.date = res.toString();
-        sys.callback(data);
+    sshell.runCmd(con, 'date').then((res) => {
+        state.date = res.toString();
+        uiCallback();
     }, () => {});
 
-    sshell.runCmd(sys.ssh, 'date -Iseconds').then((res) => {
-        data.date_ = res.toString().trim();
-        sys.callback(data);
+    sshell.runCmd(con, 'date -Iseconds').then((res) => {
+        state.date_ = res.toString().trim();
+        uiCallback();
     }, () => {});
 
-    sshell.runCmd(sys.ssh, 'uptime').then((res) => {
-        data.uptime = res.toString();
+    sshell.runCmd(con, 'uptime').then((res) => {
+        state.uptime = res.toString();
         parseUptime(res.toString());
-        sys.callback(data);
+        uiCallback();
     }, () => {});
 
-    sshell.runCmd(sys.ssh, 'free').then((res) => {
-        data.free = res;
+    sshell.runCmd(con, 'free').then((res) => {
+        state.free = res;
         parseFree(res.toString());
-        sys.callback(data);
+        uiCallback();
     }, () => {});
 
-    sshell.runCmd(sys.ssh, 'df /').then((res) => {
-        let nums = res.toString().split('\n')[1].match(/\d+/g);
+    sshell.runCmd(con, 'df -B 1 /').then((res) => {
+        let nums = res.toString().split('\n')[1].match(/\s+\d+/g);
 
-        data.rootfs = {
-            total: numeral(nums[1] * 1024 + nums[2] * 1024).format('0.0b'),
-            used: numeral(nums[1] * 1024).format('0.0b')
+        state.rootfs = {
+            total: numeral(nums[0]).format('0.0ib'),
+            used: numeral(nums[1]).format('0.0ib')
         };
-        sys.callback(data);
+        uiCallback(state);
     }, () => {});
 };
 
 var parseUptime = function (str) {
     // 19:41:40 up 29 days, 19:36,  3 users,  load average: 0,00, 0,01, 0,00
     let res = str.match(/: (\d)[.,](\d\d)/);
-    if (data.date_)
-        data.cpu.push({
-            dt: data.date_,
-            val: (res[1] * 1 + res[2] / 100) * 100 / data.cpu_count
+    if (state.date_)
+        state.cpu.push({
+            dt: state.date_,
+            val: (res[1] * 1 + res[2] / 100) * 100 / state.cpu_count
         });
-    if (data.cpu.length > 25) {
-        data.cpu = data.cpu.slice(-25);
+    if (state.cpu.length > 25) {
+        state.cpu = state.cpu.slice(-25);
     }
 };
 
@@ -195,42 +201,45 @@ var parseFree = function (str) {
             let values2 = str.split('\n')[2].match(/\d+/g);
             used = total - values2[labels.indexOf('free') - 1] * 1;
         }
-        if (data.date_)
-            data.ram.push({
-                dt: data.date_,
+        if (state.date_)
+            state.ram.push({
+                dt: state.date_,
                 val: total * 1024,
                 name: 'total'
             }, {
-                dt: data.date_,
+                dt: state.date_,
                 val: used * 1024,
                 name: 'used'
             });
-        if (data.ram.length > 50) {
-            data.ram = data.ram.slice(-50);
+        if (state.ram.length > 50) {
+            state.ram = state.ram.slice(-50);
         }
     }
 };
 
 var collectStatic = function () {
-    sshell.runCmd(sys.ssh, 'hostname -f').then((res) => {
-        data.hostname = res;
+    sshell.runCmd(con, 'hostname -f').then((res) => {
+        state.hostname = res;
+        uiCallback();
     }, () => {});
 
-    sshell.runCmd(sys.ssh, 'grep -c vendor_id /proc/cpuinfo').then((res) => {
-        data.cpu_count = res.toString();
+    sshell.runCmd(con, 'grep -c vendor_id /proc/cpuinfo').then((res) => {
+        state.cpu_count = res.toString();
+        uiCallback();
     }, () => {});
 
-    sshell.runCmd(sys.ssh, 'cat /etc/*-release').then((res) => {
+    sshell.runCmd(con, 'cat /etc/*-release').then((res) => {
         let pretty = res.toString().match(/PRETTY_NAME="(.+)"/);
         if (pretty) {
-            data.os = pretty[1];
+            state.os = pretty[1];
         } else {
             let description = res.toString().match(/DISTRIB_DESCRIPTION="(.+)"/);
             if (description) {
-                data.os = description[1];
+                state.os = description[1];
             } else {
-                data.os = res.toString();
+                state.os = res.toString();
             }
         }
+        uiCallback();
     }, () => {});
 };
