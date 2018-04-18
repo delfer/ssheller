@@ -32,6 +32,9 @@ function createWindow() {
     height: 600
   });
 
+  //Disable main menu
+  win.setMenu(null);
+
   // и загрузит index.html приложение.
   win.loadURL(url.format({
     pathname: path.join(__dirname, 'ui/index.html'),
@@ -40,7 +43,7 @@ function createWindow() {
   }));
 
   // Откроет DevTools.
-  win.webContents.openDevTools();
+  //win.webContents.openDevTools();
 
   // Возникает, когда окно будет закрыто.
   win.on('closed', () => {
