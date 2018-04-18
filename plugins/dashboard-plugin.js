@@ -130,29 +130,29 @@ exports.plugin = function (list, loader) {
 };
 
 var requestData = function () {
-    sshell.runCmd(sys.ssh, 'date').then(function (res) {
+    sshell.runCmd(sys.ssh, 'date').then((res) => {
         data.date = res.toString();
         sys.callback(data);
-    });
+    }, () => {});
 
-    sshell.runCmd(sys.ssh, 'date -Iseconds').then(function (res) {
+    sshell.runCmd(sys.ssh, 'date -Iseconds').then((res) => {
         data.date_ = res.toString().trim();
         sys.callback(data);
-    });
+    }, () => {});
 
-    sshell.runCmd(sys.ssh, 'uptime').then(function (res) {
+    sshell.runCmd(sys.ssh, 'uptime').then((res) => {
         data.uptime = res.toString();
         parseUptime(res.toString());
         sys.callback(data);
-    });
+    }, () => {});
 
-    sshell.runCmd(sys.ssh, 'free').then(function (res) {
+    sshell.runCmd(sys.ssh, 'free').then((res) => {
         data.free = res;
         parseFree(res.toString());
         sys.callback(data);
-    });
+    }, () => {});
 
-    sshell.runCmd(sys.ssh, 'df /').then(function (res) {
+    sshell.runCmd(sys.ssh, 'df /').then((res) => {
         let nums = res.toString().split('\n')[1].match(/\d+/g);
 
         data.rootfs = {
@@ -160,7 +160,7 @@ var requestData = function () {
             used: numeral(nums[1] * 1024).format('0.0b')
         };
         sys.callback(data);
-    });
+    }, () => {});
 };
 
 var parseUptime = function (str) {
@@ -212,15 +212,15 @@ var parseFree = function (str) {
 };
 
 var collectStatic = function () {
-    sshell.runCmd(sys.ssh, 'hostname -f').then(function (res) {
+    sshell.runCmd(sys.ssh, 'hostname -f').then((res) => {
         data.hostname = res;
-    });
+    }, () => {});
 
-    sshell.runCmd(sys.ssh, 'grep -c vendor_id /proc/cpuinfo').then(function (res) {
+    sshell.runCmd(sys.ssh, 'grep -c vendor_id /proc/cpuinfo').then((res) => {
         data.cpu_count = res.toString();
-    });
+    }, () => {});
 
-    sshell.runCmd(sys.ssh, 'cat /etc/*-release').then(function (res) {
+    sshell.runCmd(sys.ssh, 'cat /etc/*-release').then((res) => {
         let pretty = res.toString().match(/PRETTY_NAME="(.+)"/);
         if (pretty) {
             data.os = pretty[1];
@@ -232,5 +232,5 @@ var collectStatic = function () {
                 data.os = res.toString();
             }
         }
-    });
+    }, () => {});
 };

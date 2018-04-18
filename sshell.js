@@ -83,7 +83,7 @@ exports.runCmdInteractive = function (con, command, reactions) {
             }
             stream.on('close', function (code) {
                     logCmd(con, command, stdout, stderr);
-                    if (code === 0) {
+                    if (code === undefined || code === 0) { // Bugfix: on shutdown code === undefined
                         resolve(stdout);
                     } else {
                         reject(stderr);
@@ -158,9 +158,9 @@ var detectPrivilegeEscalationMethod = function (con) {
                         con.privilegeEscalationMethod = PEM.SU;
                         resolve(con.privilegeEscalationMethod);
                     } else {
-                        reject();
+                        reject({message: 'Can not get root'});
                     }
-                }, reject);
+                }, () => reject({message: 'Can not get root'}));
         };
 
         checkJustRoot();
