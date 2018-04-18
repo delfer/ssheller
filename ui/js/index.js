@@ -158,7 +158,13 @@ function disconnect() {
 viewServerList = {};
 
 views.ServerList.activate = function () {
-  var servers = backend.getServers();
+  var servers = backend.getServers().sort((a, b) => {
+    if (a.name < b.name)
+      return -1;
+    if (a.name > b.name)
+      return 1;
+    return 0;
+  });
   var $list = $('#serverSelector');
   $list.empty();
   $.each(servers, function () {
