@@ -5,11 +5,9 @@ const PEM = {
     SU: 'su'
 };
 
-exports.runCmd = function (con, command) {
-    return exports.runCmdInteractive(con, command);
-};
+exports.runCmd = (con, command) => exports.runCmdInteractive(con, command);
 
-exports.runCmdAsRootMethod = function (con, command, method, forceBreak) {
+exports.runCmdAsRootMethod = (con, command, method, forceBreak) => {
 
     var ctrlC = '';
     if (forceBreak) {
@@ -42,17 +40,19 @@ exports.runCmdAsRootMethod = function (con, command, method, forceBreak) {
                 }
             ]);
         default:
-            return new Promise(rs, rj => rj);
+            return new Promise((rs, rj) => rj);
     }
 };
 
-exports.runCmdAsRoot = function (con, command) {
-    return detectPrivilegeEscalationMethod(con).then((method) => {
-        return exports.runCmdAsRootMethod(con, command, method);
-    });
+exports.runCmdAsRoot = (con, command) => {
+    return detectPrivilegeEscalationMethod(con)
+        .then(method =>
+            exports.runCmdAsRootMethod(con, command, method)
+        )
+        .catch((e) => Promise.reject(e));
 };
 
-exports.runBashScriptAsRoot = function (con, script, args) {
+exports.runBashScriptAsRoot = (con, script, args) => {
     var script64 = Buffer.from(script, 'binary').toString('base64');
 
     if (!args) {
@@ -64,34 +64,42 @@ exports.runBashScriptAsRoot = function (con, script, args) {
     return rushPackage(con, 'bash')
         .then(() => rushPackage(con, 'base64'))
         .then(() => detectPrivilegeEscalationMethod(con))
-        .then((method) => exports.runCmdAsRootMethod(con, command, method));
+        .then(method => exports.runCmdAsRootMethod(con, command, method))
+        .catch((e) => (e) => Promise.reject(e));
 };
 
 
-exports.runCmdInteractive = function (con, command, reactions) {
+exports.runCmdInteractive = (con, command, reactions) => {
     var stdout = '';
     var stderr = '';
     var reactionN = 0;
-    return new Promise(function (resolve, reject) {
+    return new Promise((resolve, reject) => {
 
-        var makeTry = function () {
+        var makeTry = () => {
             var isSuccessful = con.exec(command, {
-            pty: reactions != undefined
-        }, function (err, stream) {
+                pty: true
+            }, (err, stream) => {
             if (err) {
-                logCmd(con, command, undefined, err);
+                    if (/open fail/i.test(err)) {
+                        log.error('Exec failed with ' + err);
+                        con.end();
+                    }
+                    logCmd(con, command, undefined, undefined, err);
                 reject(err);
                 return;
             }
-            stream.on('close', function (code) {
-                    logCmd(con, command, stdout, stderr);
-                    if (code === undefined || code === 0) { // Bugfix: on shutdown code === undefined
+                stream.on('close', code => {
+                        logCmd(con, command, code, stdout, stderr);
+                        if (code === undefined || code === 0) { // Bugfix: on shutdown, code === undefined
                         resolve(stdout);
                     } else {
-                            reject(stderr); // DO: Your password has expired.\nPassword change required but no TTY available.
+                            if ((!stderr || stderr.length < 1) && stdout && stdout.length > 0) {
+                                reject('Exit code: ' + code + '\n' + stdout);
                     }
+                            reject('Exit code: ' + code + '\n' + stderr);
+                        }
                 })
-                .on('data', function (data) {
+                    .on('data', data => {
                     stdout += data;
                     if (reactions && reactionN < reactions.length) {
                         if (reactions[reactionN].regex.test(data)) {
@@ -99,7 +107,7 @@ exports.runCmdInteractive = function (con, command, reactions) {
                             reactionN++;
                             } else if (reactions[reactionN].optional) {
                                 // If current answer optional -> find first required
-                                for (i = reactionN+1; i < reactions.length; i++) {
+                                for (i = reactionN + 1; i < reactions.length; i++) {
                                     if (reactions[i].regex.test(data)) {
                                         stream.write(reactions[i].answer);
                                         reactionN = i + 1;
@@ -112,7 +120,7 @@ exports.runCmdInteractive = function (con, command, reactions) {
                                 }
                         }
                     }
-                }).stderr.on('data', function (data) {
+                    }).stderr.on('data', data => {
                     stderr += data;
                 });
         });
@@ -127,17 +135,17 @@ exports.runCmdInteractive = function (con, command, reactions) {
     });
 };
 
-var detectPrivilegeEscalationMethod = function (con) {
-    return new Promise(function (resolve, reject) {
+var detectPrivilegeEscalationMethod = con => {
+    return new Promise((resolve, reject) => {
         if (con.privilegeEscalationMethod) {
             resolve(con.privilegeEscalationMethod);
             return;
         }
 
         //Already root
-        var checkJustRoot = function () {
+        var checkJustRoot = () => {
             exports.runCmdAsRootMethod(con, 'whoami', PEM.JUST_ROOT)
-                .then(function (data) {
+                .then(data => {
                     if (/\s*root\s*/.test(data)) {
                         con.privilegeEscalationMethod = PEM.JUST_ROOT;
                         resolve(con.privilegeEscalationMethod);
@@ -148,9 +156,9 @@ var detectPrivilegeEscalationMethod = function (con) {
         };
 
         //Sudo without password
-        var checkSudoNoPasswd = function () {
+        var checkSudoNoPasswd = () => {
             exports.runCmdAsRootMethod(con, 'whoami', PEM.SUDO_NO_PASSWD)
-                .then(function (data) {
+                .then(data => {
                     if (/\s*root\s*/.test(data)) {
                         con.privilegeEscalationMethod = PEM.SUDO_NO_PASSWD;
                         resolve(con.privilegeEscalationMethod);
@@ -161,9 +169,9 @@ var detectPrivilegeEscalationMethod = function (con) {
         };
 
         //Sudo with password
-        var checkSudoPasswd = function () {
+        var checkSudoPasswd = () => {
             exports.runCmdAsRootMethod(con, 'whoami', PEM.SUDO_PASSWD, true)
-                .then(function (data) {
+                .then(data => {
                     if (/\s*root\s*/.test(data)) {
                         con.privilegeEscalationMethod = PEM.SUDO_PASSWD;
                         resolve(con.privilegeEscalationMethod);
@@ -174,23 +182,27 @@ var detectPrivilegeEscalationMethod = function (con) {
         };
 
         //Su
-        var checkSu = function () {
+        var checkSu = () => {
             exports.runCmdAsRootMethod(con, 'whoami', PEM.SU, true)
-                .then(function (data) {
+                .then(data => {
                     if (/\s*root\s*/.test(data)) {
                         con.privilegeEscalationMethod = PEM.SU;
                         resolve(con.privilegeEscalationMethod);
                     } else {
-                        reject({message: 'Can not get root'});
+                        reject({
+                            message: 'Can not get root'
+                        });
                     }
-                }, () => reject({message: 'Can not get root'}));
+                }, () => reject({
+                    message: 'Can not get root'
+                }));
         };
 
         checkJustRoot();
     });
 };
 
-var rushPackage = function (con, package) {
+var rushPackage = (con, package) => {
     var command = 'which ' + package +
         ' || ( apt-get update && apt-get install -y ' + package + ' )' +
         ' || yum install -y ' + package +
