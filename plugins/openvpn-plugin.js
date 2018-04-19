@@ -1,7 +1,7 @@
 var sshell = require('../sshell');
 var fs = require('fs');
 
-var script = fs.readFileSync('scripts/openvpn-install.sh', 'UTF-8').replace('SUDO_USER','NOSUDO_USER');
+var script = fs.readFileSync('scripts/openvpn-install.sh', 'UTF-8').replace('SUDO_USER', 'NOSUDO_USER');
 
 var plugin = {};
 var con;
@@ -9,7 +9,9 @@ var refresher;
 
 var uiCallback;
 
-var state = {report: {}};
+var state = {
+    report: {}
+};
 
 plugin.name = 'OpenVPN';
 
@@ -100,7 +102,7 @@ plugin.getView = function () {
                 $('#installBtn').addClass("disabled");
                 $('#uninstallBtn').addClass("disabled");
             } else if (state.installationInProgress) {
-                statusText = 'Please, wait for about <b>10</b> minutes. OpenVPN installation in progress...';
+                statusText = 'Please, wait for about <b>15</b> minutes. OpenVPN installation in progress...';
                 statusClass = 'alert-warning';
                 $('#installBtn').addClass("disabled");
                 $('#uninstallBtn').addClass("disabled");
@@ -133,7 +135,7 @@ plugin.getView = function () {
             
             if (state.installationInProgress) {
                 var currentTime = new Date().getTime();
-                var currentProgress = (currentTime - state.startTime)*100/(10*60*1000); // % of 10 minutes
+                var currentProgress = (currentTime - state.startTime)*100/(15*60*1000); // % of 15 minutes
                 currentProgress = Math.round(currentProgress) % 100; // Not > 100%
 
                 $("#progressContent")
@@ -221,7 +223,9 @@ plugin.setViewRefreshCallback = function (callback) {
 plugin.setSSHConnection = function (ssh) {
     con = ssh;
     // Reset state
-    state = {report: {}};
+    state = {
+        report: {}
+    };
     detectOS();
     getStatus();
     getClients();
@@ -236,26 +240,28 @@ plugin.interract = function (request) {
         addNewClient(request.newClientName);
     } else if (request.getFile) {
         getFile(request.getFile);
-    }  else if (request.gotReport) {
+    } else if (request.gotReport) {
         state.report = {};
     } else if (request.refresh) {
         uiCallback();
     }
 };
 
-plugin.reset = function () {
-};
+plugin.reset = function () {};
 
 exports.plugin = function (list, loader) {
     list.push(plugin);
 };
 
-var requestData = function () {
+var refreshData = function () {
     uiCallback();
+    if (!state.installationInProgress) {
+        clearInterval(refresher);
+    }
 };
 
-var detectOS = function () {
-    sshell.runCmd(con, 'cat /etc/*-release').then((res) => {
+var detectOS = () =>
+    sshell.runCmd(con, 'cat /etc/*-release').then(res => {
         var pretty = res.toString().match(/PRETTY_NAME="(.+)"/);
         if (pretty) {
             state.osName = pretty[1];
@@ -282,7 +288,7 @@ var detectOS = function () {
             if (/14\.04/.test(state.osName)) {
                 state.osVersion = '1404';
             } else if (/16\.04/.test(state.osName)) {
-                state.osVersion = '16.04';
+                state.osVersion = '1604';
             } else if (/17\.10/.test(state.osName)) {
                 state.osVersion = '1710';
             }
@@ -307,12 +313,11 @@ var detectOS = function () {
         }
         uiCallback();
     });
-};
 
-var getStatus = function () {
+var getStatus = () => {
     var statusScript = script.replace(/^\s*read .*$/mg, 'exit');
 
-    sshell.runBashScriptAsRoot(con, statusScript).then((s) => {
+    sshell.runBashScriptAsRoot(con, statusScript).then(s => {
         if (/I need to know the IPv4 address/i.test(s)) {
             state.readyToInstall = true;
         } else if (/is not supported/i.test(s) ||
@@ -328,7 +333,7 @@ var getStatus = function () {
     });
 };
 
-var installOpenVPN = function () {
+var installOpenVPN = () => {
     var installScript = script.
     replace(/^\s*read.*-i\s+([^\s]+)\s+(CONTINUE)$/mg, '$2="$1"; echo "$$$2"'). //Continue update in Arch Linux
     replace(/^\s*read.*(CONTINUE)$/mg, '$1="n"; echo "$$$1"'). //Do not continue on unsupported OS
@@ -339,24 +344,29 @@ var installOpenVPN = function () {
 
     state.installationInProgress = true;
     state.readyToInstall = false;
-    uiCallback();
+
+    refresher = setInterval(refreshData, 1000);
 
     state.startTime = new Date().getTime();
 
-    return sshell.runBashScriptAsRoot(con, installScript).then((s) => {
-        state.report.success = true;
-        state.report.text = s;
+    return sharedScripts.install_package(con, 'curl')
+        .then(() => sharedScripts.install_package(con, 'openvpn'))
+        .then(() => sshell.runBashScriptAsRoot(con, installScript))
+        .then((s) => {
+            state.report.success = true;
+            state.report.text = s;
 
-        state.installationInProgress = false;
-        getStatus();
-        getClients();
-    }, (s) => {
-        state.report.success = false;
-        state.report.text = s;
+            state.installationInProgress = false;
+            getStatus();
+            getClients();
+        })
+        .catch(s => {
+            state.report.success = false;
+            state.report.text = s;
 
-        state.installationInProgress = false;
-        getStatus();
-    });
+            state.installationInProgress = false;
+            getStatus();
+        });
 };
 
 
@@ -369,47 +379,53 @@ var uninstallOpenVPN = function () {
     state.installed = false;
     uiCallback();
 
-    sshell.runBashScriptAsRoot(con, uninstallScript).then((s) => {
-        state.report.success = true;
-        state.report.text = s;
+    sshell.runBashScriptAsRoot(con, uninstallScript)
+        .then(s => {
+            state.report.success = true;
+            state.report.text = s;
 
-        state.uninstallationInProgress = false;
-        getStatus();
-    }, (s) => {
-        state.report.success = false;
-        state.report.text = s;
+            state.uninstallationInProgress = false;
+            getStatus();
+        }, s => {
+            state.report.success = false;
+            state.report.text = s;
 
-        state.uninstallationInProgress = false;
-        getStatus();
-    });
+            state.uninstallationInProgress = false;
+            getStatus();
+        });
 };
 
-var addNewClient = function (name) {
+var addNewClient = name => {
     var addClientScript = script.
     replace(/^\s*read.*(option)/mg, '$1="1"; echo "$$$1"'). // Select option 1 to add new client
     replace(/^\s*read.*(CLIENT)/mg, '$1="' + name + '"; echo "$$$1"'); // New clint's name
 
-    return sshell.runBashScriptAsRoot(con, addClientScript).
-        then(() => getClients());
+    return sshell.runBashScriptAsRoot(con, addClientScript)
+        .then(getClients, getClients);
 };
 
-var getClients = function () {
-    sshell.runCmdAsRoot(con, "ls *.ovpn | cat").then((s) => {
-        state.clients = s.trim().split(/\s*[\r\n]+\s*/g);
-        state.clients = state.clients.filter ((s) => {return !s.includes(':');});
-        uiCallback();
-    }, (s) => {
-        uiCallback();
-    });
+var getClients = () => {
+    sshell.runCmdAsRoot(con, "ls *.ovpn | cat")
+        .then(s => {
+            state.clients = s.trim().split(/\s*[\r\n]+\s*/g);
+            state.clients = state.clients.filter((s) => {
+                return !s.includes(':');
+            });
+            uiCallback();
+        })
+        .catch(uiCallback);
 };
 
-var getFile = function (file) {
-    sshell.runCmdAsRoot(con, "echo \"|\"; cat \"" + file + "\" | base64; echo \"|\"").then((s) => {
-        s = s.replace(/[\r\n]/g, '');
-        var base64 = /\|((?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?)\|/.exec(s)[1];
-        state.report.takeFile = {name: file, body: base64};
-        uiCallback();
-    }, (s) => {
-        uiCallback();
-    });
+var getFile = file => {
+    sshell.runCmdAsRoot(con, "echo \"|\"; cat \"" + file + "\" | base64; echo \"|\"")
+        .then(s => {
+            s = s.replace(/[\r\n]/g, '');
+            var base64 = /\|((?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?)\|/.exec(s)[1];
+            state.report.takeFile = {
+                name: file,
+                body: base64
+            };
+            uiCallback();
+        })
+        .catch(uiCallback);
 };
