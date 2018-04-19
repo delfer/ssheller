@@ -79,32 +79,32 @@ exports.runCmdInteractive = (con, command, reactions) => {
             var isSuccessful = con.exec(command, {
                 pty: true
             }, (err, stream) => {
-            if (err) {
+                if (err) {
                     if (/open fail/i.test(err)) {
                         log.error('Exec failed with ' + err);
                         con.end();
                     }
                     logCmd(con, command, undefined, undefined, err);
-                reject(err);
-                return;
-            }
+                    reject(err);
+                    return;
+                }
                 stream.on('close', code => {
                         logCmd(con, command, code, stdout, stderr);
                         if (code === undefined || code === 0) { // Bugfix: on shutdown, code === undefined
-                        resolve(stdout);
-                    } else {
+                            resolve(stdout);
+                        } else {
                             if ((!stderr || stderr.length < 1) && stdout && stdout.length > 0) {
                                 reject('Exit code: ' + code + '\n' + stdout);
-                    }
+                            }
                             reject('Exit code: ' + code + '\n' + stderr);
                         }
-                })
+                    })
                     .on('data', data => {
-                    stdout += data;
-                    if (reactions && reactionN < reactions.length) {
-                        if (reactions[reactionN].regex.test(data)) {
-                            stream.write(reactions[reactionN].answer);
-                            reactionN++;
+                        stdout += data;
+                        if (reactions && reactionN < reactions.length) {
+                            if (reactions[reactionN].regex.test(data)) {
+                                stream.write(reactions[reactionN].answer);
+                                reactionN++;
                             } else if (reactions[reactionN].optional) {
                                 // If current answer optional -> find first required
                                 for (i = reactionN + 1; i < reactions.length; i++) {
@@ -118,12 +118,12 @@ exports.runCmdInteractive = (con, command, reactions) => {
                                         break;
                                     }
                                 }
+                            }
                         }
-                    }
                     }).stderr.on('data', data => {
-                    stderr += data;
-                });
-        });
+                        stderr += data;
+                    });
+            });
 
             if (!isSuccessful) {
                 con.on('continue', makeTry);
@@ -215,7 +215,114 @@ var rushPackage = (con, package) => {
     return exports.runCmdAsRoot(con, command);
 };
 
-var logCmd = function (con, command, out, err) {
-    log.debug('com: %s; out: %s; err: %s',
-        command, out, err);
+var logCmd = (con, command, code, out, err) => {
+    log.debug('com: %s; ext: %s out: %s; err: %s',
+        command, code, out, err);
+};
+
+var makeTempPassword = con => {
+    con.origPassword = con.config.password;
+    con.tempPassword = con.config.password.charAt(0) + 'ssheller' + con.config.password.slice(1);
+    /*  //WORKAROUD FOR LINUX CHECKS:
+    if (palindrome(oldmono, newmono)) {
+  		msg = _("Bad: new password cannot be a palindrome");
+  	} else if (strcmp(oldmono, newmono) == 0) {
+  		msg = _("Bad: new and old password must differ by more than just case");
+  	} else if (similar(oldmono, newmono)) {
+  		msg = _("Bad: new and old password are too similar");
+  	} else if (simple(old, new)) {
+  		msg = _("Bad: new password is too simple");
+  	} else if (strstr(wrapped, newmono)) {
+  		msg = _("Bad: new password is just a wrapped version of the old one");
+  	}
+    // And "The password is too similar to the old one" on CentOS
+    */
+};
+
+exports.setTempPassword = con => {
+    log.warning("Changing password to temporary");
+
+    makeTempPassword(con);
+
+    var answers = [{
+        regex: /current/i,
+        answer: con.origPassword + '\n',
+        optional: true
+    }, {
+        regex: /new/i,
+        answer: con.tempPassword + '\n'
+    }, {
+        regex: /new/i,
+        answer: con.tempPassword + '\n'
+    }, {
+        regex: /error|bad|fail/i,
+        answer: '\x03'
+    }];
+
+    return exports.runCmdInteractive(con, 'true', answers);
+};
+
+exports.setBackPassword = con => {
+    log.warning("Changing password back");
+
+    var answers = [{
+        regex: /current/i,
+        answer: con.tempPassword + '\n',
+        optional: true
+    }, {
+        regex: /new/i,
+        answer: con.origPassword + '\n'
+    }, {
+        regex: /new/i,
+        answer: con.origPassword + '\n'
+    }, {
+        regex: /error|bad|fail/i,
+        answer: '\x03'
+    }];
+
+    return exports.runCmdInteractive(con, 'passwd', answers);
+
+};
+
+exports.checkPasswordExpire = con => {
+    if (con.config.password === con.tempPassword) {
+        //Step 3: Set orig password back
+        return exports.setBackPassword(con)
+            .then(() => {
+                delete(con.tempPassword);
+                con.reconnect();
+                log.warning('Password changed back to orig');
+                return Promise.reject('On orig password');
+            });
+    }
+
+    // Step 1: Check for password expired
+    var answers = [{
+        regex: /:/,
+        answer: '\x03'
+    }, {
+        regex: /:/,
+        answer: '\x03'
+    }, {
+        regex: /:/,
+        answer: '\x03'
+    }];
+
+    return exports.runCmdInteractive(con, 'true', answers)
+        .then((e) => {
+            log.info('Not needed to change password');
+        }, (e) => {
+            if (/password/i.test(e)) {
+                //Step 2: Set temp password
+                return exports.setTempPassword(con)
+                    .then(() => {
+                        con.reconnect();
+                        log.warning('Password changed to temp');
+                        return Promise.reject('On temp password');
+                    });
+            } else {
+                log.error("Connection broken: %s", e);
+            }
+        });
+
 };

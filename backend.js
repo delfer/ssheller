@@ -7,6 +7,7 @@ const path = require('path');
 const url = require('url');
 var sshClient = require('ssh2').Client;
 var storage = require('./storage');
+var sshell = require('./sshell');
 var plugins = require('./plugins-loader');
 
 var Log = require('log');
@@ -20,6 +21,8 @@ CircularJSON = require('circular-json');
 
 var serverConnection;
 var activePlugin;
+
+var disconnectedByUser;
 
 // Храните глобальную ссылку на объект окна, если вы этого не сделаете, окно будет
 // автоматически закрываться, когда объект JavaScript собирает мусор.
@@ -53,7 +56,6 @@ function createWindow() {
     win = null;
   });
 
-  console.log("ready");
   plugins.load(pluginViewRefreshCallback);
 }
 
@@ -107,24 +109,52 @@ ipcMain.on('connect', function (event, serverName) {
 
   serverConnection = new sshClient();
 
+  var startConnection = () => {
+    log.info('Connecting...');
+    try {
+      serverConnection.connect({
+        host: server.host,
+        port: server.port,
+        username: server.user,
+        password: serverConnection.tempPassword ? serverConnection.tempPassword : server.password,
+        privateKey: server.key
+      });
+    } catch (e) {
+      event.sender.send('connect-reply', e.message);
+    }
+  };
+
+  serverConnection.reconnect = () => {
+    log.info('Reconnecting...');
+    disconnectedByUser = true;
+    serverConnection.end();
+    return setTimeout(startConnection, 1000);
+  };
+
   serverConnection.on('ready', function () {
-    serverConnection.config.rootPassword = server.rootPassword; //It's not needed by ssh2, but config here used just as storage
-    plugins.setSSHConnection(serverConnection);
-    log.debug('con: %s', CircularJSON.stringify(serverConnection).replace(/("\w*password\w*"\s*:\s*)"[^"]*"/gi, '$1"XXX"'));
-    event.sender.send('connect-reply', 'ok');
+    sshell.checkPasswordExpire(serverConnection).then(
+      () => {
+        serverConnection.config.rootPassword = server.rootPassword; //It's not needed by ssh2, but config here used just as storage
+        plugins.setSSHConnection(serverConnection);
+        log.debug('con: %s', CircularJSON.stringify(serverConnection).replace(/("\w*password\w*"\s*:\s*)"[^"]*"/gi, '$1"XXX"'));
+        disconnectedByUser = false;
+        event.sender.send('connect-reply', 'ok');
+      },
+      (e) => {
+        log.warning('Not connected: password changed');
+      }
+    );
   });
 
-  try {
-    serverConnection.connect({
-      host: server.host,
-      port: server.port,
-      username: server.user,
-      password: server.password,
-      privateKey: server.key
-    });
-  } catch (e) {
-    event.sender.send('connect-reply', e.message);
-  }
+  startConnection();
+
+  serverConnection.on('close', function (hadError) {
+    log.error('Disconnect ' + hadError);
+    // Reconnect
+    if (!disconnectedByUser) {
+      startConnection();
+    }
+  });
 
   serverConnection.on('error', function (err) {
     event.sender.send('connect-reply', err.message);
@@ -132,6 +162,7 @@ ipcMain.on('connect', function (event, serverName) {
 });
 
 ipcMain.on('disconnect', function (event) {
+  disconnectedByUser = true;
   plugins.reset();
   serverConnection.end();
 });
