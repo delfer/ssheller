@@ -97,6 +97,19 @@ exports.runCmdInteractive = function (con, command, reactions) {
                         if (reactions[reactionN].regex.test(data)) {
                             stream.write(reactions[reactionN].answer);
                             reactionN++;
+                            } else if (reactions[reactionN].optional) {
+                                // If current answer optional -> find first required
+                                for (i = reactionN+1; i < reactions.length; i++) {
+                                    if (reactions[i].regex.test(data)) {
+                                        stream.write(reactions[i].answer);
+                                        reactionN = i + 1;
+                                        break;
+                                    } else if (reactions[i].optional) {
+                                        continue;
+                                    } else {
+                                        break;
+                                    }
+                                }
                         }
                     }
                 }).stderr.on('data', function (data) {
