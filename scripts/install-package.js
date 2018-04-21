@@ -1,7 +1,14 @@
 var sshell = require('../sshell');
 var fs = require('fs');
+const path = require('path');
 
-var script = fs.readFileSync('scripts/pacapt', 'UTF-8');
+var script;
+
+fs.readFile(path.join(__dirname, 'pacapt'), 'utf8', function (err, out) {
+  if (!err) {
+    script = out;
+  }
+});
 
 exports.load = scripts => {
   scripts.install_package = (con, package) => {

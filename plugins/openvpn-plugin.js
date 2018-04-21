@@ -1,7 +1,14 @@
 var sshell = require('../sshell');
 var fs = require('fs');
+const path = require('path');
 
-var script = fs.readFileSync('scripts/openvpn-install.sh', 'UTF-8').replace('SUDO_USER', 'NOSUDO_USER');
+var script;
+
+fs.readFile(path.join(__dirname, '../scripts/openvpn-install.sh'), 'utf8', function (err, out) {
+    if (!err && out) {
+      script = out.replace('SUDO_USER', 'NOSUDO_USER');
+    }
+  });
 
 var plugin = {};
 var con;
