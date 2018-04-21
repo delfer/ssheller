@@ -1,5 +1,5 @@
 {
-    "name": "ssheller",
+    "name": "SSHeller",
     "version": "0.1.0",
     "description": "UI to execute scripts on remote servers over SSH",
     "author": {
