@@ -13,9 +13,9 @@ var state = {
     report: {}
 };
 
-plugin.name = 'OpenVPN';
+exports.name = 'OpenVPN';
 
-plugin.getView = function () {
+exports.getView = function () {
     return `
         <!-- OS -->
         <p class="container text-muted p-0">
@@ -214,13 +214,13 @@ plugin.getView = function () {
     `;
 };
 
-plugin.setViewRefreshCallback = function (callback) {
+exports.setViewRefreshCallback = function (callback) {
     uiCallback = function () {
-        callback(state, plugin.name);
+        callback(state, exports.name);
     };
 };
 
-plugin.setSSHConnection = function (ssh) {
+exports.setSSHConnection = function (ssh) {
     con = ssh;
     // Reset state
     state = {
@@ -231,7 +231,7 @@ plugin.setSSHConnection = function (ssh) {
     getClients();
 };
 
-plugin.interract = function (request) {
+exports.interract = function (request) {
     if (request.install) {
         installOpenVPN();
     } else if (request.uninstall) {
@@ -247,11 +247,7 @@ plugin.interract = function (request) {
     }
 };
 
-plugin.reset = function () {};
-
-exports.plugin = function (list, loader) {
-    list.push(plugin);
-};
+exports.reset = function () {};
 
 var refreshData = function () {
     uiCallback();

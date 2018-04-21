@@ -1,12 +1,10 @@
-plugin = require("plugin");
-
-plugins = [];
-sharedScripts = {};
+var plugins = [
+    require("./dashboard-plugin"),
+    require("./maintenance-plugin"),
+    require("./openvpn-plugin")
+];
 
 exports.load = function (pluginViewRefreshCallback) {
-    plugin(plugins).
-    require('plugins').
-    load();
     plugins.forEach(i => i.setViewRefreshCallback(pluginViewRefreshCallback));
 };
 

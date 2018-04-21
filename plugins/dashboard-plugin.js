@@ -1,8 +1,6 @@
 var numeral = require('numeral');
 var sshell = require('../sshell');
 
-var plugin = {};
-
 var refresher;
 
 var uiCallback;
@@ -12,9 +10,9 @@ var state = {
     ram: []
 };
 
-plugin.name = 'Dashboard';
+exports.name = 'Dashboard';
 
-plugin.getView = function () {
+exports.getView = function () {
     return `
     <style>
     .dash-chart {
@@ -113,26 +111,22 @@ plugin.getView = function () {
     `;
 };
 
-plugin.setViewRefreshCallback = function (callback) {
+exports.setViewRefreshCallback = function (callback) {
     uiCallback = function () {
-        callback(state, plugin.name);
+        callback(state, exports.name);
     };
 };
 
-plugin.setSSHConnection = function (ssh) {
+exports.setSSHConnection = function (ssh) {
     con = ssh;
     refresher = setInterval(requestData, 10000);
     collectStatic();
 };
 
-plugin.interract = function (request) {};
+exports.interract = function (request) {};
 
-plugin.reset = function () {
+exports.reset = function () {
     clearInterval(refresher);
-};
-
-exports.plugin = function (list, loader) {
-    list.push(plugin);
 };
 
 var requestData = function () {

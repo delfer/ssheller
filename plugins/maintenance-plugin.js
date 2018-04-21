@@ -1,13 +1,11 @@
-var plugin = {
-    name: 'Maintenance'
-};
+exports.name = 'Maintenance';
 
 var sshell = require('../sshell');
 
 var con;
 var uiCallback;
 
-plugin.getView = function () {
+exports.getView = function () {
     return `
         <div class="row border border-warning m-1 bg-danger align-middle">
             <div class="col m-auto">
@@ -22,6 +20,7 @@ plugin.getView = function () {
             function reboot () {
                 if (!$("#rebootBtn").attr("disabled")) {
                     pluginInterract({reboot: true});
+                    $("#rebootSlider").val(0)
                 }
             }
 
@@ -46,27 +45,23 @@ plugin.getView = function () {
     `;
 };
 
-plugin.setViewRefreshCallback = function (callback) {
+exports.setViewRefreshCallback = function (callback) {
     uiCallback = function (data) {
-        callback(data, plugin.name);
+        callback(data, exports.name);
     };
 };
 
-plugin.setSSHConnection = function (ssh) {
+exports.setSSHConnection = function (ssh) {
     con = ssh;
 };
 
-plugin.interract = function (request) {
+exports.interract = function (request) {
     if (request.reboot) {
         rebootServer();
     }
 };
 
-plugin.reset = function () {};
-
-exports.plugin = function (list, loader) {
-    list.push(plugin);
-};
+exports.reset = function () {};
 
 var rebootServer = function () {
     sshell.runCmdAsRoot(con, "shutdown -r now").

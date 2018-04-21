@@ -8,7 +8,8 @@ const url = require('url');
 var sshClient = require('ssh2').Client;
 var storage = require('./storage');
 var sshell = require('./sshell');
-var plugins = require('./plugins-loader');
+sharedScripts = require('./scripts');
+plugins = require('./plugins');
 
 var Log = require('log');
 var rfs = require('rotating-file-stream');
