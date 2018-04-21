@@ -1,4 +1,5 @@
 node_modules
+dist
 *.stackdump
 storage.dat*
 *.log
