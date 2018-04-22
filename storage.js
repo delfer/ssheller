@@ -1,11 +1,9 @@
 var aesjs = require('aes-js');
 
-var electron = require('electron');
 var fs = require('fs');
 var path = require('path');
 var zlib = require('zlib');
 
-const userDataPath = (electron.app || electron.remote.app).getPath('userData');
 const FILE_PATH = path.join(userDataPath, 'storage.dat');
 const PASSWORD = aesjs.utils.utf8.toBytes('7ri+!l3+OEf@afLaHlEq7eN?ezlenieT');
 

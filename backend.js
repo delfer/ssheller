@@ -4,6 +4,10 @@ const {
   BrowserWindow
 } = require('electron');
 const path = require('path');
+
+userDataPath = app.getPath('userData');
+const LOG_PATH = path.join(userDataPath, 'ssheller.log');
+
 const url = require('url');
 var sshClient = require('ssh2').Client;
 var storage = require('./storage');
@@ -13,7 +17,7 @@ plugins = require('./plugins');
 
 var Log = require('log');
 var rfs = require('rotating-file-stream');
-log = new Log('debug', rfs('ssheller.log', {
+log = new Log('debug', rfs(LOG_PATH, {
   size: '1M', // rotate every 1 MegaBytes written
   compress: 'gzip', // compress rotated files
   maxFiles: 3
