@@ -53,3 +53,12 @@ ipcRenderer.on('plugin-view-refresh', function (event, data) {
 backend.pluginInterract = function (data) {
     return ipcRenderer.sendSync('plugin-interract', data);
 };
+
+backend.versionCheck = serverName => {
+    return new Promise((resolve, reject) => {
+        ipcRenderer.send('versionCheck', serverName);
+        ipcRenderer.on('versionCheck-reply', (event, version) => {
+            resolve(version);
+        });
+    });
+};

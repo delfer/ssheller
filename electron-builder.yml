@@ -4,6 +4,7 @@ files:
   - scripts/*
   - ui/**/*
   - "*.js"
+  - "package.json"
   # Standart for electron-builder: https://www.electron.build/file-patterns
   - "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme,test,__tests__,tests,powered-test,example,examples,*.d.ts}"
   - "!**/node_modules/.bin"

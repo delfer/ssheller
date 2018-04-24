@@ -43,20 +43,26 @@
                     <h2>Servers list</h2>
                 </div>
             </div>
-            <div class="row">
+            <div class="row align-items-end m-1">
                 <div class="col-auto">
-                    <button type="button" class="btn btn-warning mb-2" onclick="editServer()">Edit</button>
+                    <button type="button" class="btn btn-warning" onclick="editServer()">Edit</button>
                 </div>
                 <div class="col-auto">
-                    <button type="button" class="btn btn-danger mb-2" onclick="deleteServer()">Delete</button>
+                    <button type="button" class="btn btn-danger" onclick="deleteServer()">Delete</button>
+                </div>
+                <div class="col ml-auto border border-primary text-muted text-center p-1" style="word-wrap: break-word;font-size: 0.7rem">
+                    DigitalOcean: server for
+                    <u>$5/month</u>. Support us by
+                    <a href="https://ssheller.ru/do" class="ext">Referral&nbsp;link</a> and get
+                    <b>$10&nbsp;bonus!</b>
                 </div>
                 <div class="col-auto ml-auto">
-                    <button type="button" class="btn btn-success mb-2" onclick="switchMainView('AddServer')">Add</button>
+                    <button type="button" class="btn btn-success" onclick="switchMainView('AddServer')">Add</button>
                 </div>
             </div>
             <div class="row">
                 <div class="form-group container">
-                    <select class="form-control" id="serverSelector" ondblclick="connect()" size="16">
+                    <select class="form-control" id="serverSelector" ondblclick="connect()" size="15">
                         <option>loading</option>
                     </select>
                 </div>
@@ -179,6 +185,15 @@
             <div id="PluginContent" class="jumbotron w-100 h-100 pt-1">
                 Loading...
             </div>
+        </div>
+    </div>
+    <!-- ******************** Footer ******************** -->
+    <div class="m-1 row justify-content-center">
+        <div class="col-auto">
+            <a class="ext" href="http://www.ssheller.ru">SSHeller</a>
+            <a id="versionCur" href="http://www.ssheller.ru" class="ext badge badge-primary">x.x.x</a>
+            Latest:
+            <a id="versionLatest" href="http://download.ssheller.ru" class="ext badge">x.x.x</a>
         </div>
     </div>
     <!-- Modal -->

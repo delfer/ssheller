@@ -3,6 +3,8 @@ const {
   app,
   BrowserWindow
 } = require('electron');
+const packageDescr = require('./package.json');
+const https = require('https');
 const path = require('path');
 
 userDataPath = app.getPath('userData');
@@ -40,9 +42,6 @@ function createWindow() {
     height: 600
   });
 
-  //Disable main menu
-  win.setMenu(null);
-
   // и загрузит index.html приложение.
   win.loadURL(url.format({
     pathname: path.join(__dirname, 'ui/index.html'),
@@ -50,6 +49,8 @@ function createWindow() {
     slashes: true
   }));
 
+  // Disable main menu
+  win.setMenu(null);
   // Откроет DevTools.
   //win.webContents.openDevTools();
 
@@ -180,6 +181,28 @@ ipcMain.on('plugin-interract', function (event, data) {
     event.returnValue = true;
   }
 
+});
+
+ipcMain.on('versionCheck', (event, serverName) => {
+  var version = {
+    current: packageDescr.version
+  };
+  var response = () => {
+    event.sender.send('versionCheck-reply', version);
+  };
+  https.get('https://version.ssheller.ru', resp => {
+    let data = '';
+    resp.on('data', (chunk) => {
+      data += chunk;
+    });
+    resp.on('end', () => {
+      version.latest = data;
+      response();
+    });
+
+  }).on("error", (err) => {
+    response();
+  });
 });
 
 function pluginViewRefreshCallback(data, pluginName) {

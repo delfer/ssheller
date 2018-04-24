@@ -9,7 +9,9 @@ var fixExtLinks = function () {
   });
 };
 
-fixExtLinks();
+document.addEventListener('DOMContentLoaded', () => {
+  fixExtLinks();
+});
 
 views = {
   ServerList: {},
@@ -201,3 +203,13 @@ views.Plugins.activate = function () {
 function pluginInterract(data) {
   return backend.pluginInterract(data);
 }
+
+backend.versionCheck().then(v => {
+  $('#versionCur').html(v.current);
+  $('#versionLatest').html(v.latest);
+  if (v.current === v.latest) {
+    $('#versionLatest').addClass("badge-success");
+  } else {
+    $('#versionLatest').addClass("badge-warning");
+  }
+});
