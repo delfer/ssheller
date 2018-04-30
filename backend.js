@@ -16,6 +16,7 @@ var storage = require('./storage');
 var sshell = require('./sshell');
 sharedScripts = require('./scripts');
 plugins = require('./plugins');
+widgets = require('./widgets');
 
 var Log = require('log');
 var rfs = require('rotating-file-stream');

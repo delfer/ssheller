@@ -1,6 +1,7 @@
 files:
   - node_modules/**/*
   - plugins/*
+  - widgets/*
   - scripts/*
   - ui/**/*
   - "*.js"
