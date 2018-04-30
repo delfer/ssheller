@@ -6,9 +6,9 @@ var script;
 
 fs.readFile(path.join(__dirname, '../scripts/openvpn-install.sh'), 'utf8', function (err, out) {
     if (!err && out) {
-      script = out.replace('SUDO_USER', 'NOSUDO_USER');
+        script = out.replace('SUDO_USER', 'NOSUDO_USER');
     }
-  });
+});
 
 var plugin = {};
 var con;
@@ -22,28 +22,33 @@ var state = {
 
 exports.name = 'OpenVPN';
 
+var osSupportList = [{
+        name: "Centos",
+        version: ["6", "7"]
+    },
+    {
+        name: "Fedora",
+        version: ["25", "26", "27"]
+    },
+    {
+        name: "Debian",
+        version: ["7", "8", "9"]
+    },
+    {
+        name: "Ubuntu",
+        version: ["14.04", "16.04", "17.10"]
+    },
+    {
+        name: "Arch Linux"
+    }
+];
+
+
 exports.getView = function () {
+    var osWidget = widgets.os.getView(osSupportList);
     return `
         <!-- OS -->
-        <p class="container text-muted p-0">
-            <label>Supported OS:</label><br>
-            <label id="os-d" class="badge">Debian</label>
-                <label id="os-d7" class="badge">7</label>
-                <label id="os-d8" class="badge">8</label>
-                <label id="os-d9" class="badge">9</label> |
-            <label id="os-u" class="badge">Ubuntu</label>
-                <label id="os-u1404" class="badge">14.04</label>
-                <label id="os-u1604" class="badge">16.04</label>
-                <label id="os-u1710" class="badge">17.10</label> <br>
-            <label id="os-f" class="badge">Fedora</label>
-                <label id="os-f25" class="badge">25</label>
-                <label id="os-f26" class="badge">26</label>
-                <label id="os-f27" class="badge">27</label> |
-            <label id="os-c" class="badge">CentOS</label>
-                <label id="os-c6" class="badge">6</label>
-                <label id="os-c7" class="badge">7</label> |
-            <label id="os-a" class="badge">Arch Linux</label>
-        </p>
+        ${osWidget}
 
         <!-- Status -->
         <div id='statusDiv' class="alert" role="alert">
@@ -96,11 +101,6 @@ exports.getView = function () {
 
         <script>
         function pluginViewRefreshCallback (state) {
-            if (state && state.osFamaly) {
-                $('#os-' + state.osFamaly).addClass("badge-success");
-                $('#os-' + state.osFamaly + state.osVersion).addClass("badge-success");
-            }
-
             var statusText;
             var statusClass;
             if (state.internalError) {
@@ -233,7 +233,10 @@ exports.setSSHConnection = function (ssh) {
     state = {
         report: {}
     };
-    detectOS();
+    widgets.os.init(con)
+        .then(s => {
+            state.osName = s;
+        });
     getStatus();
     getClients();
 };
@@ -262,60 +265,6 @@ var refreshData = function () {
         clearInterval(refresher);
     }
 };
-
-var detectOS = () =>
-    sshell.runCmd(con, 'cat /etc/*-release').then(res => {
-        var pretty = res.toString().match(/PRETTY_NAME="(.+)"/);
-        if (pretty) {
-            state.osName = pretty[1];
-        } else {
-            var description = res.toString().match(/DISTRIB_DESCRIPTION="(.+)"/);
-            if (description) {
-                state.osName = description[1];
-            } else {
-                state.osName = res.toString();
-            }
-        }
-
-        if (/debian/i.test(state.osName)) {
-            state.osFamaly = 'd';
-            if (/7/.test(state.osName)) {
-                state.osVersion = '7';
-            } else if (/8/.test(state.osName)) {
-                state.osVersion = '8';
-            } else if (/9/.test(state.osName)) {
-                state.osVersion = '9';
-            }
-        } else if (/ubuntu/i.test(state.osName)) {
-            state.osFamaly = 'u';
-            if (/14\.04/.test(state.osName)) {
-                state.osVersion = '1404';
-            } else if (/16\.04/.test(state.osName)) {
-                state.osVersion = '1604';
-            } else if (/17\.10/.test(state.osName)) {
-                state.osVersion = '1710';
-            }
-        } else if (/fedora/i.test(state.osName)) {
-            state.osFamaly = 'f';
-            if (/25/.test(state.osName)) {
-                state.osVersion = '25';
-            } else if (/26/.test(state.osName)) {
-                state.osVersion = '26';
-            } else if (/27/.test(state.osName)) {
-                state.osVersion = '27';
-            }
-        } else if (/centos/i.test(state.osName)) {
-            state.osFamaly = 'c';
-            if (/6/.test(state.osName)) {
-                state.osVersion = '6';
-            } else if (/7/.test(state.osName)) {
-                state.osVersion = '7';
-            }
-        } else if (/arch linux/i.test(state.osName)) {
-            state.osFamaly = 'a';
-        }
-        uiCallback();
-    });
 
 var getStatus = () => {
     var statusScript = script.replace(/^\s*read .*$/mg, 'exit');
@@ -356,16 +305,20 @@ var installOpenVPN = () => {
         .then(() => sharedScripts.install_package(con, 'openvpn'))
         .then(() => sshell.runBashScriptAsRoot(con, installScript))
         .then((s) => {
-            state.report.success = true;
-            state.report.text = s;
+            openModal(
+                'OpenVPN installation successed!',
+                '<textarea class="form-control" rows="10" style="font-family:monospace;white-space: pre;" disabled>' + s + '</textarea>'
+            );
 
             state.installationInProgress = false;
             getStatus();
             getClients();
         })
         .catch(s => {
-            state.report.success = false;
-            state.report.text = s;
+            openModal(
+                'OpenVPN installation failed!',
+                '<textarea class="form-control" rows="10" style="font-family:monospace;white-space: pre;" disabled>' + s + '</textarea>'
+            );
 
             state.installationInProgress = false;
             getStatus();
@@ -384,14 +337,18 @@ var uninstallOpenVPN = function () {
 
     sshell.runBashScriptAsRoot(con, uninstallScript)
         .then(s => {
-            state.report.success = true;
-            state.report.text = s;
+            openModal(
+                'OpenVPN uninstallation successed!',
+                '<textarea class="form-control" rows="10" style="font-family:monospace;white-space: pre;" disabled>' + s + '</textarea>'
+            );
 
             state.uninstallationInProgress = false;
             getStatus();
         }, s => {
-            state.report.success = false;
-            state.report.text = s;
+            openModal(
+                'OpenVPN uninstallation failed!',
+                '<textarea class="form-control" rows="10" style="font-family:monospace;white-space: pre;" disabled>' + s + '</textarea>'
+            );
 
             state.uninstallationInProgress = false;
             getStatus();
