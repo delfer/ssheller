@@ -62,3 +62,7 @@ backend.versionCheck = serverName => {
         });
     });
 };
+
+ipcRenderer.on('open-modal', (event, data) => {
+    openModal(data.title, data.body);
+});

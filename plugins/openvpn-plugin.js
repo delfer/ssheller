@@ -154,15 +154,6 @@ exports.getView = function () {
                 $('#progressBar').addClass('d-none');
             }
 
-            if (state.report && state.report.success && state.report.text) {
-                    var status = state.report.success ? 'successed!' : 'failed!'; 
-                    $('#mainModalLabel').html('OpenVPN (un)installation ' + status);
-                    $('#mainModalBody').html('<textarea class="form-control" rows="10" style="font-family:monospace;white-space: pre;" disabled>' + state.report.text + '</textarea>');
-                    $('#mainModal').modal('show');
-
-                    pluginInterract({gotReport: true});
-            }
-
             if (state.installed) {
                 $('#clientsDiv').removeClass('d-none');
 
@@ -305,7 +296,7 @@ var installOpenVPN = () => {
         .then(() => sharedScripts.install_package(con, 'openvpn'))
         .then(() => sshell.runBashScriptAsRoot(con, installScript))
         .then((s) => {
-            openModal(
+            openModal (
                 'OpenVPN installation successed!',
                 '<textarea class="form-control" rows="10" style="font-family:monospace;white-space: pre;" disabled>' + s + '</textarea>'
             );
@@ -315,7 +306,7 @@ var installOpenVPN = () => {
             getClients();
         })
         .catch(s => {
-            openModal(
+            openModal (
                 'OpenVPN installation failed!',
                 '<textarea class="form-control" rows="10" style="font-family:monospace;white-space: pre;" disabled>' + s + '</textarea>'
             );
@@ -337,7 +328,7 @@ var uninstallOpenVPN = function () {
 
     sshell.runBashScriptAsRoot(con, uninstallScript)
         .then(s => {
-            openModal(
+            openModal (
                 'OpenVPN uninstallation successed!',
                 '<textarea class="form-control" rows="10" style="font-family:monospace;white-space: pre;" disabled>' + s + '</textarea>'
             );
@@ -345,7 +336,7 @@ var uninstallOpenVPN = function () {
             state.uninstallationInProgress = false;
             getStatus();
         }, s => {
-            openModal(
+            openModal (
                 'OpenVPN uninstallation failed!',
                 '<textarea class="form-control" rows="10" style="font-family:monospace;white-space: pre;" disabled>' + s + '</textarea>'
             );

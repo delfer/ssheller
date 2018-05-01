@@ -213,3 +213,9 @@ backend.versionCheck().then(v => {
     $('#versionLatest').addClass("badge-warning");
   }
 });
+
+function openModal (title, body) {
+  $('#mainModalLabel').html(title);
+  $('#mainModalBody').html(body);
+  $('#mainModal').modal('show');
+}
