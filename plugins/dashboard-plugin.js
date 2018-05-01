@@ -13,6 +13,7 @@ var state = {
 exports.name = 'Dashboard';
 
 exports.getView = function () {
+    setTimeout(requestData, 1000);
     return `
     <style>
     .dash-chart {
@@ -234,6 +235,7 @@ var collectStatic = function () {
                 state.os = res.toString();
             }
         }
+        state.os = state.os.split(/\s+/).slice(0,3).join(' ');
         uiCallback();
     }, () => {});
 };
