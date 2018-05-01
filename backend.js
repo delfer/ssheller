@@ -211,3 +211,7 @@ function pluginViewRefreshCallback(data, pluginName) {
     return win.webContents.send('plugin-view-refresh', data);
   }
 }
+
+global.openModal = (title, body) => {
+    return win.webContents.send('open-modal', {title: title, body: body});
+}

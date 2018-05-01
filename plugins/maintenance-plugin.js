@@ -33,11 +33,7 @@ exports.getView = function () {
             });
 
             function pluginViewRefreshCallback (report) {
-                if (report.rebootFail) {
-                    $('#mainModalLabel').html('Reboot failed! ');
-                    $('#mainModalBody').html('<textarea class="form-control" rows="10" style="font-family:monospace;white-space: pre;" disabled>' + report.error + '</textarea>');
-                    $('#mainModal').modal('show');
-                } else if (report.reboot) {
+                if (report.reboot) {
                     disconnect();
                 }
             };
@@ -70,9 +66,9 @@ var rebootServer = function () {
             reboot: true
         });
     }, (e) => {
-        uiCallback({
-            rebootFail: true,
-            error: e.message
-        });
+        openModal (
+            'Reboot failed!',
+            '<textarea class="form-control" rows="10" style="font-family:monospace;white-space: pre;" disabled>' + e.message + '</textarea>'
+        );
     });
 };
