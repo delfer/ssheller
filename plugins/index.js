@@ -1,7 +1,8 @@
 var plugins = [
     require("./dashboard-plugin"),
     require("./maintenance-plugin"),
-    require("./openvpn-plugin")
+    require("./openvpn-plugin"),
+    require("./docker-plugin")
 ];
 
 exports.load = function (pluginViewRefreshCallback) {

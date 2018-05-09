@@ -1,0 +1,33 @@
+{
+    "images": [
+        "jwilder/nginx-proxy",
+        "panubo/vsftpd",
+        "coderaiser/cloudcmd",
+        "webdevops/php-apache-dev",
+        "webdevops/php-apache",
+        "webdevops/php-nginx-dev",
+        "webdevops/php-nginx"
+    ],
+    "parameters": {
+        "jwilder/nginx-proxy": "-v /var/run/docker.sock:/tmp/docker.sock:ro",
+        "panubo/vsftpd": "-e FTP_PASSWORD=\"{{INPUT_PASSWORD}}\" -e FTP_USER=admin -e FTP_CHOWN_ROOT=true",
+        "coderaiser/cloudcmd": "-e CLOUDCMD_PASSWORD=\"{{INPUT_PASSWORD}}\" -e CLOUDCMD_USERNAME=admin -e CLOUDCMD_AUTH=true -e CLOUDCMD_ROOT=/data",
+        "mysql": "-e MYSQL_ROOT_PASSWORD=\"{{INPUT_PASSWORD}}\" -e MYSQL_DATABASE=db -e MYSQL_USER=admin -e MYSQL_PASSWORD=\"{{INPUT_PASSWORD}}\"",
+        "mariadb": "-e MYSQL_ROOT_PASSWORD=\"{{INPUT_PASSWORD}}\" -e MYSQL_DATABASE=db -e MYSQL_USER=admin -e MYSQL_PASSWORD=\"{{INPUT_PASSWORD}}\"",
+        "postgres": "-e POSTGRES_PASSWORD=\"{{INPUT_PASSWORD}}\" -e POSTGRES_USER=admin -e POSTGRES_DB=db",
+        "rabbitmq": "-e RABBITMQ_DEFAULT_PASS=\"{{INPUT_PASSWORD}}\" -e RABBITMQ_DEFAULT_USER=admin",
+        "couchdb": "-e COUCHDB_PASSWORD=\"{{INPUT_PASSWORD}}\" -e COUCHDB_USER=admin",
+        "influxdb": "-e INFLUXDB_ADMIN_PASSWORD=\"{{INPUT_PASSWORD}}\" -e INFLUXDB_ADMIN_USER=admin -e INFLUXDB_DB=db",
+        "orientdb": "-e ORIENTDB_ROOT_PASSWORD=\"{{INPUT_PASSWORD}}\""
+    },
+    "volumes": {
+        "panubo/vsftpd": ["/srv", "/etc/vsftpd"],
+        "nginx": ["/usr/share/nginx/html"],
+        "coderaiser/cloudcmd": ["/data"],
+        "php": ["/var/www/html"],
+        "webdevops/php-apache-dev": ["/app"],
+        "webdevops/php-apache": ["/app"],
+        "webdevops/php-nginx-dev": ["/app"],
+        "webdevops/php-nginx": ["/app"]
+    }
+}
