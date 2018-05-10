@@ -65,7 +65,7 @@ exports.runBashScriptAsRoot = (con, script, args) => {
         .then(() => rushPackage(con, 'base64'))
         .then(() => detectPrivilegeEscalationMethod(con))
         .then(method => exports.runCmdAsRootMethod(con, command, method))
-        .catch((e) => (e) => Promise.reject(e));
+        .catch((e) => Promise.reject(e));
 };
 
 
