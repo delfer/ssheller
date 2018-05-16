@@ -28,7 +28,7 @@ var osSupportList = [{
     },
     {
         name: "Fedora",
-        version: ["25", "26", "27"]
+        version: ["25", "26", "27", "28"]
     },
     {
         name: "Debian",
@@ -36,7 +36,7 @@ var osSupportList = [{
     },
     {
         name: "Ubuntu",
-        version: ["14.04", "16.04", "17.10"]
+        version: ["14.04", "16.04", "17.10", "18.04"]
     },
     {
         name: "Arch Linux"
@@ -293,7 +293,6 @@ var installOpenVPN = () => {
     state.startTime = new Date().getTime();
 
     return sharedScripts.install_package(con, 'curl')
-        .then(() => sharedScripts.install_package(con, 'openvpn'))
         .then(() => sshell.runBashScriptAsRoot(con, installScript))
         .then((s) => {
             openModal (
